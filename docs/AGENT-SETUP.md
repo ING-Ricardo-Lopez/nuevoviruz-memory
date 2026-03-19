@@ -273,7 +273,7 @@ Add to your `.cursor/mcp.json` (same path on all platforms — it's project-rela
 
 > **Windows**: Make sure `engram.exe` is in your `PATH`. Cursor resolves MCP commands from the system PATH.
 
-> **Memory Protocol:** Add the Memory Protocol instructions to your `.cursorrules` file. See [DOCS.md](../DOCS.md#memory-protocol-full-text) for the full text, or use the minimal version from [Surviving Compaction](#surviving-compaction-recommended).
+> **Memory Protocol:** Create `engram.mdc` with the Memory Protocol instructions. Place it in your project's `.cursor/rules/` for project-specific use (commit to git so your team gets it), or in `~/.cursor/rules/` (Windows: `%USERPROFILE%\.cursor\rules\`) to apply globally across all your projects. Create the directory if it doesn't exist. See [DOCS.md](../DOCS.md#memory-protocol-full-text) for the full text, or use the minimal version from [Surviving Compaction](#surviving-compaction-recommended).
 
 ---
 
@@ -344,7 +344,17 @@ You have access to Engram persistent memory via MCP tools (mem_save, mem_search,
 - After any compaction or context reset, call `mem_context` to recover session state before continuing.
 ```
 
-**For Cursor/Windsurf** (`.cursorrules` or `.windsurfrules`):
+**For Cursor** (`engram.mdc`): Create this file in your project's `.cursor/rules/` or in `~/.cursor/rules/` (Windows: `%USERPROFILE%\.cursor\rules\`) for global use across all projects. Add this content:
+```
+---
+alwaysApply: true
+---
+
+You have access to Engram persistent memory (mem_save, mem_search, mem_context).
+Save proactively after significant work. After context resets, call mem_context to recover state.
+```
+
+**For Windsurf** (`.windsurfrules`):
 ```
 You have access to Engram persistent memory (mem_save, mem_search, mem_context).
 Save proactively after significant work. After context resets, call mem_context to recover state.
