@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <style><![CDATA[
+      .bg          { fill: #1e1e2e; }
+      .card-local  { fill: #fab3871a; stroke: #fab387; stroke-width: 1.5; }
+      .card-wire   { fill: #89b4fa1a; stroke: #89b4fa; stroke-width: 1.5; }
+      .card-cloud  { fill: #94e2d51a; stroke: #94e2d5; stroke-width: 1.5; }
+      .card-auth   { fill: #cba6f71a; stroke: #cba6f7; stroke-width: 1.5; }
+      .card-db     { fill: #a6e3a11a; stroke: #a6e3a1; stroke-width: 1.5; }
+      .card-deny   { fill: #f38ba81a; stroke: #f38ba8; stroke-width: 1.5; stroke-dasharray: 4 3; }
+      .title       { fill: #cdd6f4; font-size: 28px; font-weight: 700; }
+      .subtitle    { fill: #a6adc8; font-size: 14px; }
+      .section     { fill: #cdd6f4; font-size: 19px; font-weight: 700; }
+      .label       { fill: #cdd6f4; font-size: 14px; font-weight: 600; }
+      .sub         { fill: #a6adc8; font-size: 12px; }
+      .mono        { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #94e2d5; font-size: 11px; }
+      .tag-ok      { fill: #a6e3a1; font-size: 11px; font-weight: 700; }
+      .tag-warn    { fill: #f9e2af; font-size: 11px; font-weight: 700; }
+      .tag-err     { fill: #f38ba8; font-size: 11px; font-weight: 700; }
+      .arrow       { stroke: #89b4fa; stroke-width: 2; fill: none; }
+      .arrow-deny  { stroke: #f38ba8; stroke-width: 2; fill: none; stroke-dasharray: 5 3; }
+      .principle   { fill: #cdd6f4; font-size: 13px; }
+      .bullet      { fill: #cba6f7; font-size: 14px; font-weight: 700; }
+    ]]></style>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#89b4fa"/>
+    </marker>
+    <marker id="arden" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#f38ba8"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1200" height="920"/>
+
+  <text class="title" x="600" y="50" text-anchor="middle">Engram — Defense in Depth</text>
+  <text class="subtitle" x="600" y="74" text-anchor="middle">Local-first memory with optional, fail-closed cloud replication</text>
+
+  <!-- ======= LOCAL SIDE ======= -->
+  <g transform="translate(60,110)">
+    <rect class="card-local" width="460" height="720" rx="16"/>
+    <text class="section" x="24" y="36">LOCAL — source of truth</text>
+    <text class="sub"     x="24" y="58">Works offline. Cloud is opt-in replication, never authority.</text>
+
+    <!-- L1 Agent -->
+    <g transform="translate(24,90)">
+      <rect class="card-local" width="412" height="80" rx="10"/>
+      <text class="label" x="16" y="28">1 · Agent</text>
+      <text class="sub"   x="16" y="48">Claude Code · OpenCode · Cursor · Codex · …</text>
+      <text class="mono"  x="16" y="68">transport: MCP stdio — no network surface</text>
+      <text class="tag-ok" x="320" y="28">no network</text>
+    </g>
+
+    <!-- L2 Local binary -->
+    <g transform="translate(24,190)">
+      <rect class="card-local" width="412" height="80" rx="10"/>
+      <text class="label" x="16" y="28">2 · engram binary</text>
+      <text class="sub"   x="16" y="48">single Go binary: mcp · serve · tui · cloud</text>
+      <text class="mono"  x="16" y="68">binds 127.0.0.1:7437 by default (localhost only)</text>
+      <text class="tag-ok" x="320" y="28">loopback only</text>
+    </g>
+
+    <!-- L3 SQLite -->
+    <g transform="translate(24,290)">
+      <rect class="card-db" width="412" height="100" rx="10"/>
+      <text class="label" x="16" y="28">3 · SQLite + FTS5</text>
+      <text class="sub"   x="16" y="48">~/.engram/engram.db — full memory, all projects</text>
+      <text class="mono"  x="16" y="68">sessions · observations · prompts · sync_state</text>
+      <text class="mono"  x="16" y="86">mode 0600 — fs permissions guard the contents</text>
+      <text class="tag-ok" x="320" y="28">authoritative</text>
+    </g>
+
+    <!-- L4 client gate -->
+    <g transform="translate(24,410)">
+      <rect class="card-local" width="412" height="110" rx="10"/>
+      <text class="label" x="16" y="28">4 · Client enrollment gate</text>
+      <text class="sub"   x="16" y="48">only enrolled projects are offered to the cloud</text>
+      <text class="mono"  x="16" y="68">table:  sync_enrolled_projects</text>
+      <text class="mono"  x="16" y="86">filter: ListPendingSyncMutations (LEFT JOIN on enroll)</text>
+      <text class="mono"  x="16" y="104">cli:    engram cloud enroll &lt;project&gt;</text>
+      <text class="tag-ok" x="320" y="28">opt-in per project</text>
+    </g>
+
+    <!-- Principles -->
+    <g transform="translate(24,540)">
+      <rect class="card-local" width="412" height="160" rx="10"/>
+      <text class="label"     x="16" y="28">LOCAL invariants</text>
+      <text class="bullet"    x="16" y="60">›</text>
+      <text class="principle" x="36" y="60">cloud outage ≠ memory outage</text>
+      <text class="bullet"    x="16" y="84">›</text>
+      <text class="principle" x="36" y="84">token never read by MCP — never leaves server process env</text>
+      <text class="bullet"    x="16" y="108">›</text>
+      <text class="principle" x="36" y="108">disabling cloud = config flip, no DB migration</text>
+      <text class="bullet"    x="16" y="132">›</text>
+      <text class="principle" x="36" y="132">project name normalize (lowercase+trim) prevents duplicate scope</text>
+    </g>
+  </g>
+
+  <!-- ======= CENTER WIRE ======= -->
+  <g transform="translate(530,360)">
+    <rect class="card-wire" width="140" height="220" rx="12"/>
+    <text class="section" x="70" y="32" text-anchor="middle">WIRE</text>
+    <line class="arrow" x1="70" y1="48"  x2="70" y2="80" marker-end="url(#ar)"/>
+    <text class="label"  x="70" y="110" text-anchor="middle">HTTPS</text>
+    <text class="sub"    x="70" y="130" text-anchor="middle">TLS 1.2+</text>
+    <text class="label"  x="70" y="160" text-anchor="middle">Bearer</text>
+    <text class="mono"   x="70" y="180" text-anchor="middle">Authorization:</text>
+    <text class="mono"   x="70" y="194" text-anchor="middle">Bearer &lt;token&gt;</text>
+    <text class="tag-ok" x="70" y="214" text-anchor="middle">server-only env, never logged</text>
+  </g>
+
+  <!-- Local → wire arrow (layer 4 bottom, 110+410+110 = 630 from page top; wire top at 360+110=470, just connect) -->
+  <line class="arrow" x1="520" y1="580" x2="540" y2="470" marker-end="url(#ar)"/>
+
+  <!-- ======= CLOUD SIDE ======= -->
+  <g transform="translate(680,110)">
+    <rect class="card-cloud" width="460" height="720" rx="16"/>
+    <text class="section" x="24" y="36">CLOUD — replication only</text>
+    <text class="sub"     x="24" y="58">engram cloud serve on VPS — does not own memory</text>
+
+    <!-- C1 Bearer check -->
+    <g transform="translate(24,90)">
+      <rect class="card-auth" width="412" height="100" rx="10"/>
+      <text class="label" x="16" y="28">1 · Bearer token (Authenticator)</text>
+      <text class="sub"   x="16" y="48">header required · rotates via SetBearerToken</text>
+      <text class="mono"  x="16" y="68">auth.Service.Authorize(r *http.Request)</text>
+      <text class="mono"  x="16" y="86">string equality check (TLS-protected on wire)</text>
+      <text class="tag-warn" x="320" y="28">fail → 401</text>
+    </g>
+
+    <!-- C2 Project authorizer -->
+    <g transform="translate(24,210)">
+      <rect class="card-auth" width="412" height="130" rx="10"/>
+      <text class="label" x="16" y="28">2 · ProjectScopeAuthorizer</text>
+      <text class="sub"   x="16" y="48">allowlist per token · fail-closed when empty</text>
+      <text class="mono"  x="16" y="68">AuthorizeProject(project)</text>
+      <text class="mono"  x="16" y="86">EnrolledProjects() — used by pull filter</text>
+      <text class="mono"  x="16" y="104">ENGRAM_CLOUD_ALLOWED_PROJECTS=engram,gentle-ai</text>
+      <text class="tag-err" x="320" y="28">fail → 403</text>
+    </g>
+
+    <!-- C3 Pull filter -->
+    <g transform="translate(24,360)">
+      <rect class="card-auth" width="412" height="100" rx="10"/>
+      <text class="label" x="16" y="28">3 · Pull filter (REQ-202)</text>
+      <text class="sub"   x="16" y="48">cloudserver only returns mutations the token owns</text>
+      <text class="mono"  x="16" y="68">EnrolledProjectsProvider interface assertion</text>
+      <text class="mono"  x="16" y="86">missing → allowedProjects=[] → empty result (safe)</text>
+    </g>
+
+    <!-- C4 Postgres -->
+    <g transform="translate(24,480)">
+      <rect class="card-db" width="412" height="100" rx="10"/>
+      <text class="label" x="16" y="28">4 · Postgres cloud_mutations</text>
+      <text class="sub"   x="16" y="48">per-project monotonic seq · WAL · append-only</text>
+      <text class="mono"  x="16" y="68">(project, seq) unique · idx on (project, seq)</text>
+      <text class="mono"  x="16" y="86">never overwritten — cloud is a replay log</text>
+    </g>
+
+    <!-- Rejected request callout -->
+    <g transform="translate(24,600)">
+      <rect class="card-deny" width="412" height="100" rx="10"/>
+      <text class="label" x="16" y="28">Rejected at the boundary</text>
+      <text class="tag-err" x="16" y="52">401 · missing / invalid bearer</text>
+      <text class="tag-err" x="16" y="70">403 · project not on allowlist</text>
+      <text class="tag-err" x="16" y="88">400 · mutation without required project field</text>
+    </g>
+  </g>
+
+  <!-- Footer principles -->
+  <g transform="translate(60,848)">
+    <text class="sub">principle:</text>
+    <text class="principle" x="78" y="0"><tspan fill="#cba6f7" font-weight="700">fail-closed</tspan> — unknown auth state rejects by default · <tspan fill="#cba6f7" font-weight="700">least authority</tspan> — tokens scoped to explicit project set · <tspan fill="#cba6f7" font-weight="700">local-first</tspan> — cloud is replica, never authority</text>
+  </g>
+</svg>

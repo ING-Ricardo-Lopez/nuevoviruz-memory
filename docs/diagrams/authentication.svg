@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <style><![CDATA[
+      .bg        { fill: #1e1e2e; }
+      .title     { fill: #cdd6f4; font-size: 28px; font-weight: 700; }
+      .subtitle  { fill: #a6adc8; font-size: 14px; }
+      .colhead   { fill: #cdd6f4; font-size: 20px; font-weight: 700; }
+      .step-n    { fill: #1e1e2e; font-size: 13px; font-weight: 800; }
+      .label     { fill: #cdd6f4; font-size: 14px; font-weight: 700; }
+      .sub       { fill: #a6adc8; font-size: 12px; }
+      .mono      { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #94e2d5; font-size: 12px; }
+      .mono-d    { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #a6adc8; font-size: 11px; }
+      .card      { fill: #313244; stroke: #45475a; stroke-width: 1; }
+      .card-a    { fill: #89b4fa1a; stroke: #89b4fa; stroke-width: 1.5; }
+      .card-b    { fill: #cba6f71a; stroke: #cba6f7; stroke-width: 1.5; }
+      .arrow-a   { stroke: #89b4fa; stroke-width: 2; fill: none; }
+      .arrow-b   { stroke: #cba6f7; stroke-width: 2; fill: none; }
+      .arrow-err { stroke: #f38ba8; stroke-width: 2; fill: none; stroke-dasharray: 5 3; }
+      .tag-ok    { fill: #a6e3a1; font-size: 11px; font-weight: 700; }
+      .tag-err   { fill: #f38ba8; font-size: 11px; font-weight: 700; }
+    ]]></style>
+    <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#89b4fa"/></marker>
+    <marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#cba6f7"/></marker>
+    <marker id="mer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#f38ba8"/></marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="960"/>
+
+  <text class="title" x="640" y="50" text-anchor="middle">Engram — Authentication</text>
+  <text class="subtitle" x="640" y="74" text-anchor="middle">Two paths, one Service · bearer for machines · signed session cookies for humans</text>
+
+  <!-- Column A (left): Sync Client Flow -->
+  <g transform="translate(40,110)">
+    <rect class="card-a" width="580" height="800" rx="14"/>
+    <text class="colhead" x="24" y="36">A · Sync client (machine)</text>
+    <text class="sub"     x="24" y="58">used by: engram serve autosync · CLI cloud ops · curl debug</text>
+
+    <!-- step 1 -->
+    <g transform="translate(24,90)">
+      <circle cx="18" cy="18" r="18" fill="#89b4fa"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">1</text>
+      <text class="label" x="48" y="14">Client reads ENGRAM_CLOUD_TOKEN from env</text>
+      <text class="sub"   x="48" y="32">shim sources ~/.engram/cloud.env before exec</text>
+    </g>
+
+    <!-- step 2: request -->
+    <g transform="translate(24,150)">
+      <circle cx="18" cy="18" r="18" fill="#89b4fa"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">2</text>
+      <text class="label" x="48" y="14">Request goes out over HTTPS</text>
+      <rect class="card" x="48" y="26" width="490" height="92" rx="8"/>
+      <text class="mono"  x="60" y="48">POST /sync/mutations/push HTTP/1.1</text>
+      <text class="mono"  x="60" y="66">Host: engram.condetuti.com</text>
+      <text class="mono"  x="60" y="84">Authorization: Bearer 5f5eb51b657c70…</text>
+      <text class="mono"  x="60" y="102">Content-Type: application/json</text>
+    </g>
+
+    <!-- step 3: Authorize -->
+    <g transform="translate(24,290)">
+      <circle cx="18" cy="18" r="18" fill="#89b4fa"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">3</text>
+      <text class="label" x="48" y="14">auth.Service.Authorize(r *http.Request)</text>
+      <rect class="card" x="48" y="26" width="490" height="120" rx="8"/>
+      <text class="mono-d" x="60" y="48">// internal/cloud/auth/auth.go:234</text>
+      <text class="mono"   x="60" y="66">header := r.Header.Get("Authorization")</text>
+      <text class="mono"   x="60" y="84">parts  := strings.Fields(header)  // "Bearer X"</text>
+      <text class="mono"   x="60" y="102">strings.EqualFold(parts[0], "Bearer")</text>
+      <text class="mono"   x="60" y="120">token == s.expectedToken   // string equality</text>
+    </g>
+    <text class="tag-err" x="430" y="300">fail → 401</text>
+
+    <!-- step 4: AuthorizeProject -->
+    <g transform="translate(24,470)">
+      <circle cx="18" cy="18" r="18" fill="#89b4fa"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">4</text>
+      <text class="label" x="48" y="14">ProjectScopeAuthorizer.AuthorizeProject(p)</text>
+      <rect class="card" x="48" y="26" width="490" height="110" rx="8"/>
+      <text class="mono-d" x="60" y="48">// auth.go:192 — per-token allowlist</text>
+      <text class="mono"   x="60" y="66">normalized := store.NormalizeProject(project)</text>
+      <text class="mono"   x="60" y="84">if _, ok := a.allowed[normalized]; !ok {</text>
+      <text class="mono"   x="60" y="102">  return ErrProjectNotAllowed   // leaks nothing</text>
+      <text class="mono"   x="60" y="120">}</text>
+    </g>
+    <text class="tag-err" x="430" y="480">fail → 403</text>
+
+    <!-- step 5: Handler runs -->
+    <g transform="translate(24,640)">
+      <circle cx="18" cy="18" r="18" fill="#89b4fa"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">5</text>
+      <text class="label" x="48" y="14">Handler runs · writes to cloud_mutations</text>
+      <rect class="card" x="48" y="26" width="490" height="70" rx="8"/>
+      <text class="mono"  x="60" y="48">cloudstore.AppendMutation(project, seq, payload…)</text>
+      <text class="mono"  x="60" y="66">202 Accepted → {accepted_seqs: [N]}</text>
+      <text class="tag-ok" x="440" y="88">success → 200</text>
+    </g>
+
+    <!-- connector arrows -->
+    <line class="arrow-a" x1="300" y1="148" x2="300" y2="170" marker-end="url(#ma)"/>
+    <line class="arrow-a" x1="300" y1="268" x2="300" y2="290" marker-end="url(#ma)"/>
+    <line class="arrow-a" x1="300" y1="446" x2="300" y2="468" marker-end="url(#ma)"/>
+    <line class="arrow-a" x1="300" y1="616" x2="300" y2="638" marker-end="url(#ma)"/>
+  </g>
+
+  <!-- Column B (right): Dashboard Session Flow -->
+  <g transform="translate(660,110)">
+    <rect class="card-b" width="580" height="800" rx="14"/>
+    <text class="colhead" x="24" y="36">B · Dashboard user (human)</text>
+    <text class="sub"     x="24" y="58">used by: browser session on /dashboard — signed cookie, no raw token stored</text>
+
+    <!-- step 1 -->
+    <g transform="translate(24,90)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">1</text>
+      <text class="label" x="48" y="14">User POSTs /dashboard/login {token}</text>
+      <text class="sub"   x="48" y="32">token equals ENGRAM_CLOUD_TOKEN or a SetDashboardSessionTokens() value</text>
+    </g>
+
+    <!-- step 2: MintDashboardSession -->
+    <g transform="translate(24,140)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">2</text>
+      <text class="label" x="48" y="14">Service.MintDashboardSession(token)</text>
+      <rect class="card" x="48" y="26" width="490" height="160" rx="8"/>
+      <text class="mono-d" x="60" y="48">// auth.go:58 — returns signed session (no JWT lib)</text>
+      <text class="mono"   x="60" y="68">claims := { token_hash, iat, exp }</text>
+      <text class="mono"   x="60" y="86">token_hash := HMAC_SHA256("dashboard:"+token, jwtSecret)</text>
+      <text class="mono"   x="60" y="104">exp := iat + 8h      // hard TTL</text>
+      <text class="mono"   x="60" y="122">payload := base64url(json(claims))</text>
+      <text class="mono"   x="60" y="140">signed  := payload + "." + base64url(HMAC(payload, jwtSecret))</text>
+      <text class="mono"   x="60" y="160">// raw bearer never appears in claims — only its HMAC</text>
+    </g>
+
+    <!-- step 3: Cookie set -->
+    <g transform="translate(24,320)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">3</text>
+      <text class="label" x="48" y="14">Server → Set-Cookie dashboard_session</text>
+      <rect class="card" x="48" y="26" width="490" height="70" rx="8"/>
+      <text class="mono" x="60" y="48">Set-Cookie: dashboard_session=&lt;payload&gt;.&lt;sig&gt;;</text>
+      <text class="mono" x="60" y="66">  HttpOnly; Secure; SameSite=Lax; Path=/</text>
+    </g>
+
+    <!-- step 4: subsequent request -->
+    <g transform="translate(24,420)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">4</text>
+      <text class="label" x="48" y="14">Browser requests /dashboard/stats</text>
+      <rect class="card" x="48" y="26" width="490" height="60" rx="8"/>
+      <text class="mono" x="60" y="48">GET /dashboard/stats</text>
+      <text class="mono" x="60" y="66">Cookie: dashboard_session=&lt;payload&gt;.&lt;sig&gt;</text>
+    </g>
+
+    <!-- step 5: ParseDashboardSession -->
+    <g transform="translate(24,510)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">5</text>
+      <text class="label" x="48" y="14">Service.ParseDashboardSession(cookie)</text>
+      <rect class="card" x="48" y="26" width="490" height="175" rx="8"/>
+      <text class="mono-d" x="60" y="48">// auth.go:79 — verify + decode + match</text>
+      <text class="mono"   x="60" y="68">parts       := split(cookie, ".")</text>
+      <text class="mono"   x="60" y="86">expected    := HMAC_SHA256(parts[0], jwtSecret)</text>
+      <text class="mono"   x="60" y="104">hmac.Equal(expected, decoded(parts[1]))  // const-time</text>
+      <text class="mono"   x="60" y="122">claims      := json(base64urlDecode(parts[0]))</text>
+      <text class="mono"   x="60" y="140">claims.exp  &gt; now()                       // TTL check</text>
+      <text class="mono"   x="60" y="160">claims.token_hash ≡ HMAC("dashboard:"+expected)</text>
+    </g>
+    <text class="tag-err" x="430" y="520">fail → 401</text>
+
+    <!-- step 6 -->
+    <g transform="translate(24,720)">
+      <circle cx="18" cy="18" r="18" fill="#cba6f7"/>
+      <text class="step-n" x="18" y="23" text-anchor="middle">6</text>
+      <text class="label" x="48" y="14">Handler runs · renders templ page</text>
+      <rect class="card" x="48" y="26" width="490" height="50" rx="8"/>
+      <text class="mono" x="60" y="50">handleDashboardStats(w, r) → 200 HTML</text>
+      <text class="tag-ok" x="440" y="68">success → 200</text>
+    </g>
+
+    <!-- connector arrows -->
+    <line class="arrow-b" x1="300" y1="128" x2="300" y2="140" marker-end="url(#mb)"/>
+    <line class="arrow-b" x1="300" y1="300" x2="300" y2="320" marker-end="url(#mb)"/>
+    <line class="arrow-b" x1="300" y1="398" x2="300" y2="420" marker-end="url(#mb)"/>
+    <line class="arrow-b" x1="300" y1="488" x2="300" y2="510" marker-end="url(#mb)"/>
+    <line class="arrow-b" x1="300" y1="698" x2="300" y2="720" marker-end="url(#mb)"/>
+  </g>
+
+  <!-- Footer principles -->
+  <g transform="translate(40,930)">
+    <text class="sub">invariants:</text>
+    <text class="sub" x="90">· raw bearer never appears in session claims · HMAC comparisons are constant-time · session TTL = 8h, non-renewable · rotating the bearer invalidates all existing sessions automatically</text>
+  </g>
+</svg>

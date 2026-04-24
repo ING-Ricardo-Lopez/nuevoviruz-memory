@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <style><![CDATA[
+      .bg         { fill: #1e1e2e; }
+      .title      { fill: #cdd6f4; font-size: 28px; font-weight: 700; }
+      .subtitle   { fill: #a6adc8; font-size: 14px; }
+      .section    { fill: #cdd6f4; font-size: 17px; font-weight: 700; }
+      .label      { fill: #cdd6f4; font-size: 14px; font-weight: 600; }
+      .sub        { fill: #a6adc8; font-size: 12px; }
+      .mono       { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #94e2d5; font-size: 12px; }
+      .mono-d     { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #a6adc8; font-size: 11px; }
+      .agent      { fill: #f2cdcd1a; stroke: #f2cdcd; stroke-width: 1.5; }
+      .local      { fill: #fab3871a; stroke: #fab387; stroke-width: 1.5; }
+      .runtime    { fill: #f9e2af1a; stroke: #f9e2af; stroke-width: 1.5; }
+      .wire       { fill: #89b4fa1a; stroke: #89b4fa; stroke-width: 1.5; }
+      .cloud      { fill: #94e2d51a; stroke: #94e2d5; stroke-width: 1.5; }
+      .db         { fill: #a6e3a11a; stroke: #a6e3a1; stroke-width: 1.5; }
+      .dashboard  { fill: #cba6f71a; stroke: #cba6f7; stroke-width: 1.5; }
+      .arrow      { stroke: #89b4fa; stroke-width: 2; fill: none; }
+      .arrow-back { stroke: #94e2d5; stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+      .arrow-warm { stroke: #fab387; stroke-width: 2; fill: none; }
+      .arrow-mauve{ stroke: #cba6f7; stroke-width: 2; fill: none; }
+      .badge      { font-size: 10px; fill: #1e1e2e; font-weight: 700; }
+    ]]></style>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#89b4fa"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#94e2d5"/></marker>
+    <marker id="a-peach" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#fab387"/></marker>
+    <marker id="a-mauve" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#cba6f7"/></marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="900"/>
+
+  <text class="title" x="640" y="50" text-anchor="middle">Engram — Communication Topology</text>
+  <text class="subtitle" x="640" y="74" text-anchor="middle">How agents, local binary, and cloud exchange memory</text>
+
+  <!-- ==== ROW 1: agents ==== -->
+  <g transform="translate(60,110)">
+    <rect class="agent" width="520" height="100" rx="12"/>
+    <text class="section" x="20" y="32">AI Agents (clients)</text>
+    <text class="sub"     x="20" y="54">any MCP-speaking agent — agent-agnostic by design</text>
+    <text class="mono"    x="20" y="80">Claude Code · OpenCode · Cursor · Gemini CLI · Codex · Antigravity · VS Code</text>
+  </g>
+
+  <g transform="translate(660,110)">
+    <rect class="dashboard" width="560" height="100" rx="12"/>
+    <text class="section" x="20" y="32">Human users (dashboard)</text>
+    <text class="sub"     x="20" y="54">browser sessions — read-only memory browsing &amp; activity feed</text>
+    <text class="mono"    x="20" y="80">https://engram.condetuti.com/dashboard</text>
+  </g>
+
+  <!-- ==== ROW 2: transports descending ==== -->
+  <!-- MCP stdio -->
+  <g transform="translate(150,220)">
+    <text class="label" text-anchor="middle">MCP stdio (JSON-RPC)</text>
+    <text class="mono" x="0" y="18" text-anchor="middle">no network — parent/child pipes</text>
+  </g>
+  <line class="arrow-warm" x1="320" y1="210" x2="320" y2="275" marker-end="url(#a-peach)"/>
+  <line class="arrow-warm" x1="220" y1="210" x2="220" y2="275" marker-end="url(#a-peach)"/>
+
+  <!-- HTTPS for dashboard -->
+  <g transform="translate(940,220)">
+    <text class="label" text-anchor="middle">HTTPS + session cookie</text>
+    <text class="mono"  x="0" y="18" text-anchor="middle">dashboard.session = JWT (HMAC-SHA256)</text>
+  </g>
+  <line class="arrow-mauve" x1="940" y1="210" x2="940" y2="410" marker-end="url(#a-mauve)"/>
+
+  <!-- ==== ROW 3: local engram binary ==== -->
+  <g transform="translate(60,275)">
+    <rect class="local" width="520" height="220" rx="12"/>
+    <text class="section" x="20" y="32">Local engram binary · ~/.local/bin/engram</text>
+    <text class="sub"     x="20" y="52">single Go binary — all subcommands embedded</text>
+
+    <!-- sub-modes -->
+    <g transform="translate(20,70)">
+      <rect class="runtime" width="155" height="60" rx="8"/>
+      <text class="label" x="12" y="22">mcp</text>
+      <text class="mono-d" x="12" y="40">stdio server</text>
+      <text class="mono-d" x="12" y="55">mem_save · mem_search · …</text>
+    </g>
+    <g transform="translate(185,70)">
+      <rect class="runtime" width="155" height="60" rx="8"/>
+      <text class="label" x="12" y="22">serve</text>
+      <text class="mono-d" x="12" y="40">127.0.0.1:7437</text>
+      <text class="mono-d" x="12" y="55">HTTP API · /sync/status</text>
+    </g>
+    <g transform="translate(350,70)">
+      <rect class="runtime" width="155" height="60" rx="8"/>
+      <text class="label" x="12" y="22">tui</text>
+      <text class="mono-d" x="12" y="40">bubbletea</text>
+      <text class="mono-d" x="12" y="55">browse · search · detail</text>
+    </g>
+    <g transform="translate(20,142)">
+      <rect class="runtime" width="485" height="60" rx="8"/>
+      <text class="label" x="12" y="22">cloud · config / enroll / status / serve / upgrade</text>
+      <text class="mono-d" x="12" y="42">runs autosync goroutine when ENGRAM_CLOUD_AUTOSYNC=1 and cloud.env is sourced</text>
+    </g>
+  </g>
+
+  <!-- Autosync arrow out to cloud -->
+  <g transform="translate(320,510)">
+    <text class="label" text-anchor="middle">autosync goroutine</text>
+    <text class="mono"  x="0" y="18" text-anchor="middle">HTTPS + Bearer</text>
+    <text class="sub"   x="0" y="34" text-anchor="middle">push pending · pull new · record status</text>
+  </g>
+  <line class="arrow" x1="580" y1="390" x2="720" y2="530" marker-end="url(#a-blue)"/>
+  <line class="arrow-back" x1="720" y1="560" x2="580" y2="420" marker-end="url(#a-teal)"/>
+
+  <!-- Local SQLite beneath -->
+  <g transform="translate(60,520)">
+    <rect class="db" width="520" height="70" rx="10"/>
+    <text class="label" x="20" y="28">SQLite · ~/.engram/engram.db</text>
+    <text class="mono"  x="20" y="50">sessions · observations · prompts · sync_mutations · sync_enrolled_projects</text>
+  </g>
+  <line class="arrow" x1="320" y1="495" x2="320" y2="515" marker-end="url(#a-blue)"/>
+
+  <!-- ==== ROW 3 right: cloud server ==== -->
+  <g transform="translate(660,410)">
+    <rect class="cloud" width="560" height="320" rx="12"/>
+    <text class="section" x="20" y="32">engram cloud serve · VPS</text>
+    <text class="sub"     x="20" y="52">dashboard + sync endpoints — one process</text>
+
+    <!-- endpoints group: sync -->
+    <g transform="translate(20,70)">
+      <rect class="wire" width="520" height="105" rx="8"/>
+      <text class="label" x="12" y="22">sync endpoints (bearer-auth)</text>
+      <text class="mono"  x="12" y="44">POST /sync/mutations/push    — append to journal</text>
+      <text class="mono"  x="12" y="62">GET  /sync/mutations/pull    — replay by since_seq</text>
+      <text class="mono"  x="12" y="80">POST /sync/push              — legacy chunk sync</text>
+      <text class="mono"  x="12" y="98">GET  /sync/pull              — legacy chunk sync</text>
+    </g>
+
+    <!-- endpoints group: dashboard -->
+    <g transform="translate(20,190)">
+      <rect class="dashboard" width="250" height="105" rx="8"/>
+      <text class="label" x="12" y="22">dashboard (session-auth)</text>
+      <text class="mono"  x="12" y="44">/dashboard/login</text>
+      <text class="mono"  x="12" y="62">/dashboard (home / stats)</text>
+      <text class="mono"  x="12" y="80">/dashboard/browser/*</text>
+      <text class="mono"  x="12" y="98">/dashboard/activity</text>
+    </g>
+
+    <!-- endpoints group: ops -->
+    <g transform="translate(290,190)">
+      <rect class="runtime" width="250" height="105" rx="8"/>
+      <text class="label" x="12" y="22">ops (unauth OR config)</text>
+      <text class="mono"  x="12" y="44">/health            ← unauth</text>
+      <text class="mono"  x="12" y="62">/dashboard/health  ← unauth</text>
+      <text class="mono"  x="12" y="80">ENGRAM_CLOUD_TOKEN</text>
+      <text class="mono"  x="12" y="98">ENGRAM_CLOUD_ALLOWED_PROJECTS</text>
+    </g>
+  </g>
+
+  <!-- Cloud → Postgres -->
+  <g transform="translate(660,750)">
+    <rect class="db" width="560" height="110" rx="12"/>
+    <text class="section" x="20" y="32">Postgres · cloud datastore</text>
+    <text class="sub"     x="20" y="54">authoritative only for cloud replay log — local SQLite remains source of truth</text>
+    <text class="mono"    x="20" y="82">cloud_mutations (project, seq, entity, op, payload, …)</text>
+  </g>
+  <line class="arrow" x1="940" y1="730" x2="940" y2="748" marker-end="url(#a-blue)"/>
+
+  <!-- Local daemon → dashboard footer: doesn't connect; separate concern -->
+
+  <!-- ==== FOOTER legend ==== -->
+  <g transform="translate(60,825)">
+    <rect x="0"   y="0" width="14" height="14" rx="3" fill="#fab387"/>
+    <text class="sub" x="22" y="12">local</text>
+    <rect x="90"  y="0" width="14" height="14" rx="3" fill="#f9e2af"/>
+    <text class="sub" x="112" y="12">runtime</text>
+    <rect x="180" y="0" width="14" height="14" rx="3" fill="#89b4fa"/>
+    <text class="sub" x="202" y="12">wire / HTTPS</text>
+    <rect x="300" y="0" width="14" height="14" rx="3" fill="#cba6f7"/>
+    <text class="sub" x="322" y="12">dashboard</text>
+    <rect x="410" y="0" width="14" height="14" rx="3" fill="#94e2d5"/>
+    <text class="sub" x="432" y="12">cloud</text>
+    <rect x="490" y="0" width="14" height="14" rx="3" fill="#a6e3a1"/>
+    <text class="sub" x="512" y="12">persistent store</text>
+    <rect x="640" y="0" width="14" height="14" rx="3" fill="#f2cdcd"/>
+    <text class="sub" x="662" y="12">external agent</text>
+  </g>
+</svg>

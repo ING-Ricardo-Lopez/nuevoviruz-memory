@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <style><![CDATA[
+      .bg         { fill: #1e1e2e; }
+      .title      { fill: #cdd6f4; font-size: 28px; font-weight: 700; }
+      .subtitle   { fill: #a6adc8; font-size: 14px; }
+      .section    { fill: #cdd6f4; font-size: 18px; font-weight: 700; }
+      .label      { fill: #cdd6f4; font-size: 14px; font-weight: 700; }
+      .sub        { fill: #a6adc8; font-size: 12px; }
+      .mono       { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #94e2d5; font-size: 12px; }
+      .mono-d     { font-family: ui-monospace, 'SF Mono', Menlo, monospace; fill: #a6adc8; font-size: 11px; }
+
+      .state-idle     { fill: #45475a; stroke: #89b4fa; stroke-width: 2; }
+      .state-running  { fill: #89b4fa33; stroke: #89b4fa; stroke-width: 2; }
+      .state-healthy  { fill: #a6e3a133; stroke: #a6e3a1; stroke-width: 2; }
+      .state-degraded { fill: #f9e2af33; stroke: #f9e2af; stroke-width: 2; }
+      .state-backoff  { fill: #fab38733; stroke: #fab387; stroke-width: 2; }
+      .state-disabled { fill: #6c7086; stroke: #45475a; stroke-width: 2; stroke-dasharray: 4 3; }
+
+      .cycle-card { fill: #313244; stroke: #45475a; stroke-width: 1.5; }
+      .cycle-step { fill: #89b4fa1a; stroke: #89b4fa; stroke-width: 1.2; }
+
+      .arrow      { stroke: #a6adc8; stroke-width: 1.8; fill: none; }
+      .arrow-ok   { stroke: #a6e3a1; stroke-width: 2; fill: none; }
+      .arrow-warn { stroke: #f9e2af; stroke-width: 2; fill: none; }
+      .arrow-err  { stroke: #f38ba8; stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+      .arrow-peach{ stroke: #fab387; stroke-width: 2; fill: none; }
+      .arrow-loop { stroke: #cba6f7; stroke-width: 2; fill: none; }
+
+      .state-lbl  { fill: #cdd6f4; font-size: 16px; font-weight: 700; }
+      .pill       { fill: #cdd6f4; font-size: 11px; font-weight: 600; }
+      .value      { fill: #f9e2af; font-size: 12px; font-weight: 700; font-family: ui-monospace, monospace; }
+    ]]></style>
+    <marker id="m-gr"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a6e3a1"/></marker>
+    <marker id="m-y"   viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#f9e2af"/></marker>
+    <marker id="m-r"   viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#f38ba8"/></marker>
+    <marker id="m-p"   viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#fab387"/></marker>
+    <marker id="m-m"   viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#cba6f7"/></marker>
+    <marker id="m-gy"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a6adc8"/></marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="960"/>
+
+  <text class="title" x="640" y="50" text-anchor="middle">Engram — Autosync Manager</text>
+  <text class="subtitle" x="640" y="74" text-anchor="middle">State machine + per-tick cycle + exponential backoff</text>
+
+  <!-- ============ TOP HALF: STATE MACHINE ============ -->
+  <g transform="translate(60,110)">
+    <text class="section" x="0" y="10">State machine — internal/cloud/autosync/manager.go</text>
+    <text class="sub"     x="0" y="30">phase is reported verbatim on GET /sync/status</text>
+
+    <!-- DISABLED -->
+    <g transform="translate(30,60)">
+      <rect class="state-disabled" width="170" height="70" rx="12"/>
+      <text class="state-lbl" x="85" y="30" text-anchor="middle">disabled</text>
+      <text class="sub"       x="85" y="52" text-anchor="middle">ENGRAM_CLOUD_AUTOSYNC=0</text>
+    </g>
+
+    <!-- IDLE -->
+    <g transform="translate(260,60)">
+      <rect class="state-idle" width="170" height="70" rx="12"/>
+      <text class="state-lbl" x="85" y="30" text-anchor="middle">idle</text>
+      <text class="sub"       x="85" y="52" text-anchor="middle">waiting on PollInterval</text>
+    </g>
+
+    <!-- RUNNING -->
+    <g transform="translate(490,60)">
+      <rect class="state-running" width="170" height="70" rx="12"/>
+      <text class="state-lbl" x="85" y="30" text-anchor="middle">running</text>
+      <text class="sub"       x="85" y="52" text-anchor="middle">cycle in flight</text>
+    </g>
+
+    <!-- HEALTHY -->
+    <g transform="translate(720,20)">
+      <rect class="state-healthy" width="170" height="70" rx="12"/>
+      <text class="state-lbl" x="85" y="30" text-anchor="middle">healthy</text>
+      <text class="sub"       x="85" y="52" text-anchor="middle">last cycle succeeded</text>
+    </g>
+
+    <!-- DEGRADED -->
+    <g transform="translate(720,100)">
+      <rect class="state-degraded" width="170" height="70" rx="12"/>
+      <text class="state-lbl" x="85" y="30" text-anchor="middle">degraded</text>
+      <text class="sub"       x="85" y="52" text-anchor="middle">transport / policy / apply error</text>
+    </g>
+
+    <!-- BACKOFF -->
+    <g transform="translate(950,20)">
+      <rect class="state-backoff" width="200" height="70" rx="12"/>
+      <text class="state-lbl" x="100" y="30" text-anchor="middle">backoff</text>
+      <text class="sub"       x="100" y="52" text-anchor="middle">consecutive_failures ≥ 10</text>
+    </g>
+
+    <!-- DEAD-STATE callout -->
+    <g transform="translate(950,110)">
+      <rect class="cycle-card" width="200" height="110" rx="10"/>
+      <text class="label" x="16" y="22">retry schedule</text>
+      <text class="mono"  x="16" y="44">BaseBackoff    = 1s</text>
+      <text class="mono"  x="16" y="62">MaxBackoff     = 5m</text>
+      <text class="mono"  x="16" y="80">next = min(B·2ⁿ + jitter, 5m)</text>
+      <text class="mono-d" x="16" y="100">where n = consecutive_failures</text>
+    </g>
+
+    <!-- arrows: disabled <→ idle -->
+    <line class="arrow" x1="200" y1="95" x2="256" y2="95" marker-end="url(#m-gy)"/>
+    <text class="pill"  x="215" y="88">enable</text>
+
+    <!-- idle → running -->
+    <line class="arrow" x1="430" y1="95" x2="486" y2="95" marker-end="url(#m-gy)"/>
+    <text class="pill"  x="440" y="88">tick</text>
+
+    <!-- running → healthy -->
+    <line class="arrow-ok" x1="660" y1="80" x2="716" y2="55" marker-end="url(#m-gr)"/>
+    <text class="pill" x="665" y="70">ok</text>
+
+    <!-- running → degraded -->
+    <line class="arrow-warn" x1="660" y1="110" x2="716" y2="135" marker-end="url(#m-y)"/>
+    <text class="pill" x="665" y="130">err</text>
+
+    <!-- healthy → idle (loop back) -->
+    <path class="arrow-ok" d="M720 55 C 600 55, 430 45, 345 60" marker-end="url(#m-gr)"/>
+
+    <!-- degraded → backoff (when failures ≥ 10) -->
+    <line class="arrow-peach" x1="890" y1="135" x2="1045" y2="90" marker-end="url(#m-p)"/>
+    <text class="pill" x="905" y="118">n ≥ 10</text>
+
+    <!-- degraded → idle (retry after backoff, n &lt; 10) -->
+    <path class="arrow-warn" d="M720 135 C 600 170, 430 160, 345 105" marker-end="url(#m-y)"/>
+    <text class="pill" x="490" y="170">backoff expired</text>
+
+    <!-- backoff → idle -->
+    <path class="arrow-peach" d="M1050 65 C 600 -10, 500 20, 345 80" marker-end="url(#m-p)"/>
+    <text class="pill" x="700" y="10">backoff expired</text>
+
+    <!-- self-loop reset hint -->
+    <text class="sub" x="0" y="250">on success the failure counter resets to 0 · explicit config change (SetEnabled false) forces disabled</text>
+  </g>
+
+  <!-- ============ BOTTOM HALF: CYCLE ============ -->
+  <g transform="translate(60,410)">
+    <text class="section" x="0" y="10">Per-cycle work — push pending + pull new</text>
+    <text class="sub"     x="0" y="30">cycle() is re-entered each PollInterval tick while idle</text>
+
+    <rect class="cycle-card" x="0" y="50" width="1160" height="420" rx="14"/>
+
+    <!-- Step 1 -->
+    <g transform="translate(30,80)">
+      <rect class="cycle-step" width="230" height="120" rx="10"/>
+      <text class="label" x="16" y="26">1 · acquire lease</text>
+      <text class="mono"  x="16" y="50">TryAcquireSyncLease(key,</text>
+      <text class="mono"  x="16" y="68">  LeaseInterval=60s)</text>
+      <text class="sub"   x="16" y="92">prevents overlap if multiple</text>
+      <text class="sub"   x="16" y="108">engram serve instances race</text>
+    </g>
+
+    <!-- Step 2 -->
+    <g transform="translate(290,80)">
+      <rect class="cycle-step" width="230" height="120" rx="10"/>
+      <text class="label" x="16" y="26">2 · list enrolled</text>
+      <text class="mono"  x="16" y="50">ListEnrolledProjects()</text>
+      <text class="mono"  x="16" y="68">→ [engram, gentle-ai]</text>
+      <text class="sub"   x="16" y="92">pulled fresh from SQLite</text>
+      <text class="sub"   x="16" y="108">(no in-memory cache)</text>
+    </g>
+
+    <!-- Step 3 -->
+    <g transform="translate(550,80)">
+      <rect class="cycle-step" width="260" height="120" rx="10"/>
+      <text class="label" x="16" y="26">3 · per-project rotation</text>
+      <text class="mono"  x="16" y="50">for project in enrolled {</text>
+      <text class="mono"  x="16" y="68">  push(project) → pull(project)</text>
+      <text class="mono"  x="16" y="86">}</text>
+      <text class="sub"   x="16" y="110">first transport error aborts rotation</text>
+    </g>
+
+    <!-- Step 4 -->
+    <g transform="translate(840,80)">
+      <rect class="cycle-step" width="290" height="120" rx="10"/>
+      <text class="label" x="16" y="26">4 · record status</text>
+      <text class="mono"  x="16" y="50">MarkSyncSuccess(key)   // healthy</text>
+      <text class="mono"  x="16" y="68">MarkSyncFailure(key,   // degraded</text>
+      <text class="mono"  x="16" y="86">  msg, backoff_until)</text>
+      <text class="sub"   x="16" y="110">status surfaces on /sync/status</text>
+    </g>
+
+    <!-- step arrows -->
+    <line class="arrow" x1="260" y1="140" x2="290" y2="140" marker-end="url(#m-gy)"/>
+    <line class="arrow" x1="520" y1="140" x2="550" y2="140" marker-end="url(#m-gy)"/>
+    <line class="arrow" x1="810" y1="140" x2="840" y2="140" marker-end="url(#m-gy)"/>
+
+    <!-- PUSH detail -->
+    <g transform="translate(30,230)">
+      <rect class="cycle-step" width="540" height="210" rx="10"/>
+      <text class="label" x="16" y="26">3a · PUSH — drain pending</text>
+      <text class="mono-d" x="16" y="50">// store.go:2942  — ListPendingSyncMutations</text>
+      <text class="mono"   x="16" y="70">SELECT * FROM sync_mutations sm</text>
+      <text class="mono"   x="16" y="86">LEFT JOIN sync_enrolled_projects sep</text>
+      <text class="mono"   x="16" y="102">  ON sm.project = sep.project</text>
+      <text class="mono"   x="16" y="118">WHERE sm.target_key='cloud'</text>
+      <text class="mono"   x="16" y="134">  AND sm.acked_at IS NULL</text>
+      <text class="mono"   x="16" y="150">  AND (sm.project='' OR sep.project IS NOT NULL)</text>
+      <text class="sub"    x="16" y="176">POST /sync/mutations/push { mutations: [...] }</text>
+      <text class="sub"    x="16" y="194">→ {accepted_seqs:[…]} · MarkSyncMutationAcked</text>
+    </g>
+
+    <!-- PULL detail -->
+    <g transform="translate(600,230)">
+      <rect class="cycle-step" width="530" height="210" rx="10"/>
+      <text class="label" x="16" y="26">3b · PULL — replay new</text>
+      <text class="mono-d" x="16" y="50">// cloudserver/mutations.go:handleMutationPull</text>
+      <text class="mono"   x="16" y="70">GET /sync/mutations/pull?since_seq=N</text>
+      <text class="mono"   x="16" y="86">  &amp;project=engram&amp;limit=100</text>
+      <text class="mono"   x="16" y="110">server filters to caller&#39;s</text>
+      <text class="mono"   x="16" y="126">EnrolledProjects() set</text>
+      <text class="sub"    x="16" y="154">client applies each mutation to local SQLite</text>
+      <text class="sub"    x="16" y="172">FK failure on apply → phase=degraded, stops page</text>
+      <text class="sub"    x="16" y="190">(residual: should skip+log+continue instead)</text>
+    </g>
+  </g>
+
+  <!-- ============ BOTTOM FOOTER: config + status shape ============ -->
+  <g transform="translate(60,860)">
+    <text class="label" x="0" y="10">config (autosync.Config)</text>
+    <text class="mono"  x="0" y="30">PollInterval=30s · LeaseInterval=60s · BaseBackoff=1s · MaxBackoff=5m</text>
+    <text class="label" x="620" y="10">status shape (GET /sync/status)</text>
+    <text class="mono"  x="620" y="30">{phase, enabled, last_sync_at, consecutive_failures, backoff_until, reason_code, last_error}</text>
+  </g>
+</svg>
