@@ -8,7 +8,10 @@
 #
 # It is intentionally conservative: dry-run is the default, `--apply` creates a
 # timestamped SQLite backup per applied blocker, loop mode requires `--apply`,
-# and it never touches `last_acked_seq` or deletes sync mutations. Prefer the
+# and it never touches `last_acked_seq` or deletes sync mutations. It can also
+# repair local `sessions.directory` rows left empty by legacy data after doctor
+# reports ready, because those rows can still be included in a final push chunk.
+# Prefer the
 # built-in `engram cloud upgrade repair` flow when it can infer the directory on
 # its own; use this only for the manual rescue case.
 
@@ -16,7 +19,7 @@ set -eu
 
 usage() {
   cat <<'USAGE'
-Usage: repair-missing-session-directory.sh [--apply] [--interactive] [--all] [--max N] [--seq N] PROJECT [DIRECTORY]
+Usage: repair-missing-session-directory.sh [--apply] [--interactive] [--all] [--fix-empty-sessions] [--max N] [--seq N] PROJECT [DIRECTORY]
 
 Safely patch one legacy sync mutation payload:
   - session upsert missing `directory`
@@ -33,8 +36,14 @@ Flags:
               Prompt for missing observation fields after local inference fails.
               Without this flag, incomplete observation repairs stay blocked.
   --all       Apply supported blockers one at a time, rerunning doctor after each
-              repair until no supported session/observation upsert blocker remains.
-              Requires --apply; use a one-shot dry-run first to preview changes.
+               repair until no supported session/observation upsert blocker remains.
+               Requires --apply; when doctor reports ready, also repairs local
+               sessions for PROJECT whose directory is empty/null.
+               Use a one-shot dry-run first to preview changes.
+  --fix-empty-sessions
+               When doctor has no supported mutation blocker, repair local
+               sessions for PROJECT whose directory is empty/null. Does not
+               modify sync_mutations or last_acked_seq.
   --max N     Maximum --all iterations before stopping. Defaults to 20.
   --seq N     Use a known sync_mutations.seq instead of parsing doctor output.
   -h, --help  Show this help.
@@ -113,6 +122,16 @@ abs_path_if_possible() {
   esac
 }
 
+resolve_directory() {
+  if [ "$DIRECTORY_ARG" ]; then
+    abs_path_if_possible "$DIRECTORY_ARG"
+  elif command -v git >/dev/null 2>&1 && git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    printf '%s\n' "$git_root"
+  else
+    pwd
+  fi
+}
+
 is_absoluteish_directory() {
   case "$1" in
     /* | [A-Za-z]:/*) return 0 ;;
@@ -175,6 +194,7 @@ json_required_count_sql() {
 APPLY=0
 INTERACTIVE=0
 ALL=0
+FIX_EMPTY_SESSIONS=0
 MAX_ITERATIONS=20
 SEQ=""
 ENTITY=""
@@ -191,6 +211,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --all)
       ALL=1
+      shift
+      ;;
+    --fix-empty-sessions)
+      FIX_EMPTY_SESSIONS=1
       shift
       ;;
     --max)
@@ -255,6 +279,92 @@ DB=$(db_path)
 
 have_table sync_mutations || die "sync_mutations table not found in DB: $DB"
 
+empty_session_count() {
+  if ! have_table sessions; then
+    printf '0\n'
+    return 0
+  fi
+  PROJECT_SQL=$(sql_escape "$PROJECT")
+  sqlite_scalar "SELECT COUNT(*) FROM sessions WHERE project = '$PROJECT_SQL' AND ifnull(directory, '') = '';"
+}
+
+preview_empty_sessions() {
+  PROJECT_SQL=$(sql_escape "$PROJECT")
+  info "Affected local sessions:"
+  if have_column sessions started_at; then
+    sqlite_box "SELECT id, project, started_at, ifnull(directory, '') AS directory FROM sessions WHERE project = '$PROJECT_SQL' AND ifnull(directory, '') = '' ORDER BY ifnull(started_at, ''), id;" || true
+  else
+    sqlite_box "SELECT id, project, ifnull(directory, '') AS directory FROM sessions WHERE project = '$PROJECT_SQL' AND ifnull(directory, '') = '' ORDER BY id;" || true
+  fi
+}
+
+repair_empty_sessions() {
+  have_table sessions || die "sessions table not found in DB: $DB"
+  PROJECT_SQL=$(sql_escape "$PROJECT")
+  missing_count=$(empty_session_count)
+
+  if [ "$missing_count" = "0" ]; then
+    info "No local sessions with empty/null directory found for project '$PROJECT'."
+    return 1
+  fi
+
+  DIRECTORY=$(resolve_directory)
+  is_absoluteish_directory "$DIRECTORY" || die "directory must be absolute-ish (/..., /c/..., or C:/...): $DIRECTORY"
+  DIRECTORY_SQL=$(sql_escape "$DIRECTORY")
+
+  info "Preview"
+  info "-------"
+  info "DB path: $DB"
+  info "Project: $PROJECT"
+  info "Repair: local sessions.directory fallback"
+  info "Directory: $DIRECTORY"
+  info "Rows missing directory: $missing_count"
+  info ""
+  preview_empty_sessions
+
+  if [ "$APPLY" -ne 1 ]; then
+    info ""
+    info "Dry-run only: no database changes were made. Re-run with --apply --fix-empty-sessions or --apply --all to write."
+    return 0
+  fi
+
+  backup="$DB.repair-empty-sessions-directory.$PROJECT.$(date +%Y%m%d%H%M%S).bak"
+  cp "$DB" "$backup"
+  info ""
+  info "Backup created: $backup"
+
+  sqlite3 -batch "$DB" "BEGIN;
+UPDATE sessions
+SET directory = '$DIRECTORY_SQL'
+WHERE project = '$PROJECT_SQL'
+  AND ifnull(directory, '') = '';
+COMMIT;"
+
+  remaining_count=$(empty_session_count)
+  [ "$remaining_count" = "0" ] || die "verification failed: $remaining_count sessions still have empty/null directory for project '$PROJECT'"
+  info "Apply complete: local sessions.directory verified for $missing_count row(s)."
+  return 0
+}
+
+handle_no_supported_blocker() {
+  context=$1
+  missing_count=$(empty_session_count)
+
+  if [ "$missing_count" != "0" ]; then
+    info "No supported sync_mutations blocker found, but $missing_count local session row(s) for project '$PROJECT' have empty/null directory."
+    if [ "$FIX_EMPTY_SESSIONS" -eq 1 ] || [ "$ALL" -eq 1 ]; then
+      repair_empty_sessions
+      return 0
+    fi
+    info "Rerun with --apply --fix-empty-sessions or --apply --all after reviewing the dry-run preview."
+    return 2
+  fi
+
+  info "No supported session/observation upsert blocker found."
+  [ "$context" = "loop" ] && info "Loop mode complete."
+  return 1
+}
+
 if [ ! "$SEQ" ] || [ "$ALL" -eq 1 ]; then
   require_cmd engram
 fi
@@ -264,6 +374,12 @@ if [ ! "$SEQ" ] && [ "$ALL" -ne 1 ]; then
   trap 'rm -f "$tmp"' EXIT HUP INT TERM
   if ! target=$(parse_target_from_doctor "$tmp"); then
     cat "$tmp" >&2 || true
+    if handle_no_supported_blocker "one-shot"; then
+      exit 0
+    else
+      no_blocker_rc=$?
+      [ "$no_blocker_rc" = "2" ] && exit 1
+    fi
     die "could not parse 'seq=N entity=session op=upsert' or 'seq=N entity=observation op=upsert' from doctor output; rerun with --seq N"
   fi
   SEQ=${target%% *}
@@ -292,13 +408,7 @@ payload_project=$(sqlite_scalar "SELECT ifnull(json_extract(payload, '$.project'
 [ "$payload_project" = "$PROJECT" ] || die "payload project mismatch for seq=$SEQ: got '$payload_project', want '$PROJECT'"
 
 if [ "$ENTITY" = "session" ]; then
-  if [ "$DIRECTORY_ARG" ]; then
-    DIRECTORY=$(abs_path_if_possible "$DIRECTORY_ARG")
-  elif command -v git >/dev/null 2>&1 && git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
-    DIRECTORY=$git_root
-  else
-    DIRECTORY=$(pwd)
-  fi
+  DIRECTORY=$(resolve_directory)
 
   is_absoluteish_directory "$DIRECTORY" || die "directory must be absolute-ish (/..., /c/..., or C:/...): $DIRECTORY"
   DIRECTORY_SQL=$(sql_escape "$DIRECTORY")
@@ -547,7 +657,9 @@ if [ "$ALL" -eq 1 ]; then
       info "Doctor output summary:"
       cat "$tmp" || true
       info ""
-      info "No supported session/observation upsert blocker found. Loop mode complete."
+      if handle_no_supported_blocker "loop"; then
+        continue
+      fi
       exit 0
     fi
 

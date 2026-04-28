@@ -97,11 +97,17 @@ observation payload missing required upsert fields: title (seq=N entity=observat
 canonicalize cloud chunk: mutations[768]: observation payload title is required for upsert
 ```
 
-It means a historical `session` mutation in `sync_mutations` is missing `directory`, or a historical `observation` mutation is missing one of the required upsert fields: `sync_id`, `session_id`, `type`, `title`, `content`, or `scope`. Newer Engram versions write these fields correctly, but old journal rows may still need repair before first cloud upload.
+You may also see the failure only during the final server push, even after `doctor` says the project is ready:
+
+```text
+write chunk: cloud: push chunk ...: status 400: invalid push payload: sessions[N].directory is required
+```
+
+It means a historical `session` mutation in `sync_mutations` is missing `directory`, a local `sessions` row for the project still has an empty/null `directory`, or a historical `observation` mutation is missing one of the required upsert fields: `sync_id`, `session_id`, `type`, `title`, `content`, or `scope`. Newer Engram versions write these fields correctly, but old journal rows or local session rows may still need repair before first cloud upload.
 
 ### Safe path: helper script
 
-Engram includes a temporary rescue helper. Despite the historical file name, it repairs both missing session directories and missing observation payload fields:
+Engram includes a temporary rescue helper. Despite the historical file name, it repairs missing session directories in both `sync_mutations` payloads and local `sessions.directory` rows, plus missing observation payload fields:
 
 ```bash
 tools/repair-missing-session-directory.sh <project>
@@ -138,7 +144,14 @@ If doctor reveals another legacy blocker after each repair, use loop mode after 
 tools/repair-missing-session-directory.sh --apply --interactive --all <project>
 ```
 
-Loop mode repairs exactly one supported blocker (`entity=session|observation op=upsert`), reruns `engram cloud upgrade doctor --project <project>`, then repeats until doctor no longer reports a supported blocker. It still stops on unsupported blockers, project mismatches, or observation payloads that cannot be fully inferred. In non-interactive loop mode, rerun with `--interactive` when the script asks for human-provided observation fields.
+Loop mode repairs exactly one supported blocker (`entity=session|observation op=upsert`), reruns `engram cloud upgrade doctor --project <project>`, then repeats until doctor no longer reports a supported blocker. If doctor reports ready but local `sessions` rows for the project still have empty/null `directory`, loop mode applies that fallback repair and reruns doctor once more. It still stops on unsupported blockers, project mismatches, or observation payloads that cannot be fully inferred. In non-interactive loop mode, rerun with `--interactive` when the script asks for human-provided observation fields.
+
+If one-shot mode finds no doctor blocker but reports local sessions with empty/null directory, preview and apply the fallback explicitly:
+
+```bash
+tools/repair-missing-session-directory.sh --fix-empty-sessions <project>
+tools/repair-missing-session-directory.sh --apply --fix-empty-sessions <project>
+```
 
 Use `--max` to cap the number of repairs and avoid accidental infinite loops. The default is `20`:
 
@@ -163,7 +176,7 @@ For session repairs, the script patches one legacy row in `sync_mutations` by ad
 "directory": "/absolute/path/to/project"
 ```
 
-It also updates `sessions.directory` only when the matching session row exists and its directory is empty.
+It also updates `sessions.directory` only when the matching session row exists and its directory is empty. In the fallback path for `sessions[N].directory is required`, it updates only local `sessions` rows for the requested project where `directory IS NULL OR directory = ''`; it does not modify `sync_mutations`.
 
 For observation repairs, the script reads the authoritative local row from `observations` using `payload.sync_id` or `entity_key`, then fills only missing or empty fields in the mutation payload:
 
@@ -238,6 +251,7 @@ If you want to inspect before using the helper:
 ```bash
 sqlite3 ~/.engram/engram.db "select seq, entity, op, entity_key, payload from sync_mutations where seq = 873;"
 sqlite3 ~/.engram/engram.db "select id, project, directory from sessions where id = 'manual-save-current';"
+sqlite3 ~/.engram/engram.db "select id, project, started_at, directory from sessions where project = '<project>' and (directory is null or directory = '');"
 ```
 
 Do not manually edit SQLite without a backup.
@@ -252,6 +266,7 @@ Do not manually edit SQLite without a backup.
 |---|---|
 | `chunk_id does not match payload content hash` | Upgrade client and server to `v1.14.8` or newer |
 | `session payload directory is required` | Run the missing session directory helper |
+| `sessions[N].directory is required` | Run the missing session directory helper with `--fix-empty-sessions` or `--all` |
 | `observation payload title is required for upsert` | Run the missing session directory helper; it also repairs missing observation payload fields from local `observations` |
 | `401` or `auth_required` | Check `ENGRAM_CLOUD_TOKEN` on the client and server |
 | `403` or `policy_forbidden` | Check `ENGRAM_CLOUD_ALLOWED_PROJECTS` on the server |
