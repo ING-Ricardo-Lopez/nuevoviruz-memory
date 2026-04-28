@@ -127,7 +127,7 @@ engram sync --cloud --project smoke-project
 Cloud mode is always project-scoped (`--project` is required; `engram sync --cloud --all` is intentionally blocked).
 Known repairable cloud sync/upsert/canonicalization failures keep the original error visible and recommend the explicit `doctor`/`repair` flow below; Engram never auto-applies repair from sync or autosync.
 For blocked cloud sync, `transport_failed`, or legacy session directory repair, see [Engram Cloud Troubleshooting](docs/engram-cloud/troubleshooting.md).
-If `doctor` reports a legacy mutation missing `directory` or observation fields such as `title`, use the dry-run helper first: `tools/repair-missing-session-directory.sh <project>`. Add `--interactive` when the helper needs a human-provided title/content from the shown excerpt.
+If `doctor` reports a legacy mutation missing `directory` or observation fields such as `title`, use the dry-run helper first: `tools/repair-missing-session-directory.sh <project>`. Add `--interactive` when the helper needs a human-provided title/content from the shown excerpt; after previewing, use `--apply --interactive --all <project>` to clear sequential supported blockers.
 
 **After upgrading `engram` while an MCP client is already running:**
 

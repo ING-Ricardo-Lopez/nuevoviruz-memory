@@ -132,6 +132,20 @@ For non-interactive repairs that can be inferred completely from local state, ap
 tools/repair-missing-session-directory.sh --apply <project>
 ```
 
+If doctor reveals another legacy blocker after each repair, use loop mode after you have reviewed a one-shot dry-run:
+
+```bash
+tools/repair-missing-session-directory.sh --apply --interactive --all <project>
+```
+
+Loop mode repairs exactly one supported blocker (`entity=session|observation op=upsert`), reruns `engram cloud upgrade doctor --project <project>`, then repeats until doctor no longer reports a supported blocker. It still stops on unsupported blockers, project mismatches, or observation payloads that cannot be fully inferred. In non-interactive loop mode, rerun with `--interactive` when the script asks for human-provided observation fields.
+
+Use `--max` to cap the number of repairs and avoid accidental infinite loops. The default is `20`:
+
+```bash
+tools/repair-missing-session-directory.sh --apply --interactive --all --max 5 <project>
+```
+
 Then rerun the normal flow:
 
 ```bash
@@ -159,7 +173,7 @@ sync_id, session_id, type, title, content, scope
 
 It does not invent values in non-interactive mode. If the local observation row is missing, or the required payload fields would still be empty after patching, the script exits non-zero without modifying the database. Use `--interactive` when you need to provide missing observation values manually after reviewing the payload and content excerpt.
 
-It never changes `last_acked_seq`, never deletes mutations, and creates a timestamped database backup before `--apply`.
+It never changes `last_acked_seq`, never deletes mutations, and creates a timestamped database backup before each applied blocker. Loop mode can be noisy because it intentionally keeps one backup per repair.
 
 ### How the script finds `seq`
 
@@ -182,6 +196,8 @@ If you already know the sequence:
 tools/repair-missing-session-directory.sh --seq 873 <project>
 tools/repair-missing-session-directory.sh --apply --seq 873 <project>
 ```
+
+Loop mode does not accept `--seq`; it always asks doctor for the next supported blocker each iteration.
 
 ### How the script chooses `directory`
 

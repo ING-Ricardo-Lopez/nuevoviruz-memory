@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 # Temporary/manual rescue helper for legacy Engram Cloud upgrade data.
 #
-# This script patches one legacy `sync_mutations` row whose upsert payload is
+# This script patches legacy `sync_mutations` rows whose upsert payloads are
 # missing required fields, producing doctor errors such as:
 #   session payload directory is required and cannot be inferred from local state (seq=N entity=session op=upsert)
 #   observation payload missing required upsert fields: title (seq=N entity=observation op=upsert)
 #
 # It is intentionally conservative: dry-run is the default, `--apply` creates a
-# timestamped SQLite backup, and it never touches `last_acked_seq` or deletes
-# sync mutations. Prefer the built-in `engram cloud upgrade repair` flow when it
-# can infer the directory on its own; use this only for the manual rescue case.
+# timestamped SQLite backup per applied blocker, loop mode requires `--apply`,
+# and it never touches `last_acked_seq` or deletes sync mutations. Prefer the
+# built-in `engram cloud upgrade repair` flow when it can infer the directory on
+# its own; use this only for the manual rescue case.
 
 set -eu
 
 usage() {
   cat <<'USAGE'
-Usage: repair-missing-session-directory.sh [--apply] [--interactive] [--seq N] PROJECT [DIRECTORY]
+Usage: repair-missing-session-directory.sh [--apply] [--interactive] [--all] [--max N] [--seq N] PROJECT [DIRECTORY]
 
 Safely patch one legacy sync mutation payload:
   - session upsert missing `directory`
@@ -31,6 +32,10 @@ Flags:
   --interactive
               Prompt for missing observation fields after local inference fails.
               Without this flag, incomplete observation repairs stay blocked.
+  --all       Apply supported blockers one at a time, rerunning doctor after each
+              repair until no supported session/observation upsert blocker remains.
+              Requires --apply; use a one-shot dry-run first to preview changes.
+  --max N     Maximum --all iterations before stopping. Defaults to 20.
   --seq N     Use a known sync_mutations.seq instead of parsing doctor output.
   -h, --help  Show this help.
 
@@ -169,6 +174,8 @@ json_required_count_sql() {
 
 APPLY=0
 INTERACTIVE=0
+ALL=0
+MAX_ITERATIONS=20
 SEQ=""
 ENTITY=""
 
@@ -180,6 +187,19 @@ while [ "$#" -gt 0 ]; do
       ;;
     --interactive)
       INTERACTIVE=1
+      shift
+      ;;
+    --all)
+      ALL=1
+      shift
+      ;;
+    --max)
+      [ "$#" -ge 2 ] || die "--max requires a positive integer"
+      MAX_ITERATIONS=$2
+      shift 2
+      ;;
+    --max=*)
+      MAX_ITERATIONS=${1#--max=}
       shift
       ;;
     --seq)
@@ -215,6 +235,19 @@ case "$SEQ" in
   "" | *[!0-9]*) [ "$SEQ" = "" ] || die "--seq must be a positive integer" ;;
 esac
 
+case "$MAX_ITERATIONS" in
+  "" | *[!0-9]*) die "--max must be a positive integer" ;;
+esac
+[ "$MAX_ITERATIONS" -gt 0 ] || die "--max must be greater than zero"
+
+if [ "$ALL" -eq 1 ] && [ "$APPLY" -ne 1 ]; then
+  die "--all requires --apply because loop mode writes repeatedly; run a one-shot dry-run first: $0 <project>"
+fi
+
+if [ "$ALL" -eq 1 ] && [ "$SEQ" ]; then
+  die "--all cannot be combined with --seq; loop mode reads the next blocker from doctor each iteration"
+fi
+
 require_cmd sqlite3
 
 DB=$(db_path)
@@ -222,8 +255,11 @@ DB=$(db_path)
 
 have_table sync_mutations || die "sync_mutations table not found in DB: $DB"
 
-if [ ! "$SEQ" ]; then
+if [ ! "$SEQ" ] || [ "$ALL" -eq 1 ]; then
   require_cmd engram
+fi
+
+if [ ! "$SEQ" ] && [ "$ALL" -ne 1 ]; then
   tmp=${TMPDIR:-/tmp}/engram-doctor-output.$$.txt
   trap 'rm -f "$tmp"' EXIT HUP INT TERM
   if ! target=$(parse_target_from_doctor "$tmp"); then
@@ -234,6 +270,7 @@ if [ ! "$SEQ" ]; then
   ENTITY=${target#* }
 fi
 
+repair_current_target() {
 PROJECT_SQL=$(sql_escape "$PROJECT")
 SEQ_SQL=$(sql_escape "$SEQ")
 
@@ -302,7 +339,7 @@ if [ "$ENTITY" = "session" ]; then
     info ""
     info "Dry-run only: no database changes were made. Re-run with --apply to write."
   else
-    backup="$DB.repair-missing-session-directory.$(date +%Y%m%d%H%M%S).bak"
+    backup="$DB.repair-missing-session-directory.seq-$SEQ.$(date +%Y%m%d%H%M%S).bak"
     cp "$DB" "$backup"
     info ""
     info "Backup created: $backup"
@@ -477,7 +514,7 @@ else
     info ""
     info "Dry-run only: no database changes were made. Re-run with --apply to write."
   else
-    backup="$DB.repair-missing-session-directory.$(date +%Y%m%d%H%M%S).bak"
+    backup="$DB.repair-missing-session-directory.seq-$SEQ.$(date +%Y%m%d%H%M%S).bak"
     cp "$DB" "$backup"
     info ""
     info "Backup created: $backup"
@@ -495,6 +532,35 @@ COMMIT;"
     [ "$missing_after_apply" = "0" ] || die "verification failed: observation payload still has empty required fields"
     info "Apply complete: observation payload required fields verified."
   fi
+fi
+}
+
+if [ "$ALL" -eq 1 ]; then
+  tmp=${TMPDIR:-/tmp}/engram-doctor-output.$$.txt
+  trap 'rm -f "$tmp"' EXIT HUP INT TERM
+  iteration=1
+  while [ "$iteration" -le "$MAX_ITERATIONS" ]; do
+    info ""
+    info "Loop iteration $iteration/$MAX_ITERATIONS: running doctor..."
+    if ! target=$(parse_target_from_doctor "$tmp"); then
+      info ""
+      info "Doctor output summary:"
+      cat "$tmp" || true
+      info ""
+      info "No supported session/observation upsert blocker found. Loop mode complete."
+      exit 0
+    fi
+
+    SEQ=${target%% *}
+    ENTITY=${target#* }
+    info "Supported blocker found: seq=$SEQ entity=$ENTITY op=upsert"
+    repair_current_target
+    iteration=$((iteration + 1))
+  done
+
+  die "--all stopped after --max $MAX_ITERATIONS repairs; rerun doctor or increase --max if supported blockers remain"
+else
+  repair_current_target
 fi
 
 info ""
