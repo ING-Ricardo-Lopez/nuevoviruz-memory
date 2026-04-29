@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -586,6 +587,10 @@ func main() {
 		cmdCloud(cfg)
 	case "obsidian-export":
 		cmdObsidianExport(cfg)
+	case "learn":
+		cmdLearn(cfg)
+	case "profile":
+		cmdProfile(cfg)
 	case "projects":
 		cmdProjects(cfg)
 	case "setup":
@@ -2065,6 +2070,254 @@ func cmdProjectsPrune(cfg store.Config) {
 	}
 
 	fmt.Printf("\nPruned %d project(s): %d sessions, %d prompts removed.\n", len(selected), totalSessions, totalPrompts)
+}
+
+func cmdLearn(cfg store.Config) {
+	if len(os.Args) < 3 {
+		fmt.Fprintln(os.Stderr, "usage: nuevoviruz learn <repo-path> [--language LANG]")
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "Analiza un repositorio y extrae patrones de estilo de c\u00f3digo.")
+		exitFunc(1)
+	}
+	repoPath := os.Args[2]
+	language := ""
+	for i := 3; i < len(os.Args); i++ {
+		if os.Args[i] == "--language" && i+1 < len(os.Args) {
+			language = os.Args[i+1]
+			i++
+		}
+	}
+
+	s, err := storeNew(cfg)
+	if err != nil {
+		fatal(err)
+	}
+	defer s.Close()
+
+	fmt.Printf("[nuevoviruz] Analizando repo: %s\n", repoPath)
+
+	patterns := analyzeRepoPatterns(repoPath, language)
+	for _, p := range patterns {
+		id, err := s.AddStyleFingerprint(p)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error guardando pattern %s: %v\n", p.Pattern, err)
+			continue
+		}
+		fmt.Printf("  + [%s] %s (#%d)\n", p.Category, p.Pattern, id)
+	}
+	fmt.Printf("[nuevoviruz] %d patrones de estilo extra\u00eddos.\n", len(patterns))
+}
+
+func cmdProfile(cfg store.Config) {
+	s, err := storeNew(cfg)
+	if err != nil {
+		fatal(err)
+	}
+	defer s.Close()
+
+	if len(os.Args) < 3 {
+		prefs, err := s.GetCommunicationProfile("")
+		if err != nil {
+			fatal(err)
+		}
+		if len(prefs) == 0 {
+			fmt.Println("Perfil vac\u00edo. Us\u00e1 'nuevoviruz profile seed' para cargar perfil inicial.")
+			return
+		}
+		fmt.Println("=== Perfil de Comunicaci\u00f3n ===")
+		for _, p := range prefs {
+			fmt.Printf("  [%s] %s = %s (conf: %.1f, fuente: %s)\n", p.Category, p.Preference, p.Value, p.Confidence, p.Source)
+		}
+		return
+	}
+
+	subcmd := os.Args[2]
+	switch subcmd {
+	case "seed":
+		err := s.SeedProfileFromMap(defaultProfileSeed())
+		if err != nil {
+			fatal(err)
+		}
+		fmt.Println("[nuevoviruz] Perfil inicial cargado.")
+	case "set":
+		if len(os.Args) < 6 {
+			fmt.Fprintln(os.Stderr, "usage: nuevoviruz profile set <category> <preference> <value>")
+			exitFunc(1)
+		}
+		id, err := s.SetCommunicationPreference(store.SetCommunicationPreferenceParams{
+			Category:   os.Args[3],
+			Preference: os.Args[4],
+			Value:      os.Args[5],
+			Confidence: 1.0,
+			Source:     "manual",
+		})
+		if err != nil {
+			fatal(err)
+		}
+		fmt.Printf("Preferencia guardada: #%d\n", id)
+	default:
+		fmt.Fprintf(os.Stderr, "subcomando desconocido: %s (seed, set)\n", subcmd)
+		exitFunc(1)
+	}
+}
+
+func defaultProfileSeed() map[string]map[string]string {
+	return map[string]map[string]string{
+		"communication": {
+			"format":    "breve + contexto del POR QUE",
+			"tone":      "profesional y seco",
+			"verbosity": "minima",
+			"challenge": "siempre que detecte error o mala decision",
+			"language":  "espanol",
+		},
+		"coding": {
+			"priority_order": "funcionalidad > mantenibilidad > performance > robustez > legibilidad",
+			"naming":         "follow the framework",
+			"comments":       "minimos, solo cuando el POR QUE no es obvio",
+			"architecture":   "ad hoc contextual, lo mejor para el caso",
+		},
+		"debugging": {
+			"approach":   "concurrencia-first para problemas de performance",
+			"method":     "eliminacion sistematica, binary search",
+			"data_first": "siempre tener datos/metricas antes de tocar codigo",
+		},
+		"workflow": {
+			"planning":     "estricto, siempre plan antes de codigo",
+			"ai_role":      "ejecutor que aprende mi estilo",
+			"frustrations": "setup lento, IA desobediente, malas decisiones tempranas",
+		},
+	}
+}
+
+func analyzeRepoPatterns(repoPath, languageFilter string) []store.AddStyleFingerprintParams {
+	var patterns []store.AddStyleFingerprintParams
+	exts := []string{".ts", ".tsx", ".js", ".jsx", ".go", ".py", ".rs"}
+	if languageFilter != "" {
+		switch languageFilter {
+		case "typescript", "ts":
+			exts = []string{".ts", ".tsx"}
+		case "javascript", "js":
+			exts = []string{".js", ".jsx"}
+		case "go":
+			exts = []string{".go"}
+		case "python", "py":
+			exts = []string{".py"}
+		}
+	}
+	counts := map[string]map[string]int{
+		"naming":         {},
+		"error_handling": {},
+		"imports":        {},
+	}
+	filepath.Walk(repoPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return nil
+		}
+		if strings.Contains(path, "/.git/") || strings.Contains(path, "/node_modules/") || strings.Contains(path, "/vendor/") {
+			return nil
+		}
+		matched := false
+		for _, ext := range exts {
+			if strings.HasSuffix(path, ext) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		content := string(data)
+		lang := detectLanguageFromPath(path)
+		analyzeNaming(content, lang, counts["naming"])
+		analyzeErrorHandling(content, lang, counts["error_handling"])
+		analyzeImports(content, lang, counts["imports"])
+		return nil
+	})
+	for category, freqs := range counts {
+		for pattern, freq := range freqs {
+			if freq < 2 {
+				continue
+			}
+			patterns = append(patterns, store.AddStyleFingerprintParams{
+				Category:   category,
+				Pattern:    pattern,
+				Language:   languageFilter,
+				Confidence: math.Min(float64(freq)/10.0, 1.0),
+				Source:     "repo_analysis",
+			})
+		}
+	}
+	return patterns
+}
+
+func detectLanguageFromPath(path string) string {
+	switch {
+	case strings.HasSuffix(path, ".ts"), strings.HasSuffix(path, ".tsx"):
+		return "typescript"
+	case strings.HasSuffix(path, ".js"), strings.HasSuffix(path, ".jsx"):
+		return "javascript"
+	case strings.HasSuffix(path, ".go"):
+		return "go"
+	case strings.HasSuffix(path, ".py"):
+		return "python"
+	default:
+		return ""
+	}
+}
+
+func analyzeNaming(content, lang string, counts map[string]int) {
+	camelCount := 0
+	snakeCount := 0
+	for _, line := range strings.Split(content, "\n") {
+		if strings.Contains(line, "camel") {
+			camelCount++
+		}
+		if strings.Contains(line, "snake") {
+			snakeCount++
+		}
+	}
+	if camelCount > snakeCount {
+		counts["camelCase dominant"]++
+	} else {
+		counts["snake_case dominant"]++
+	}
+}
+
+func analyzeErrorHandling(content, lang string, counts map[string]int) {
+	if strings.Contains(content, "try {") || strings.Contains(content, "try{") {
+		counts["try-catch"]++
+	}
+	if strings.Contains(content, "if err != nil") {
+		counts["if-err-nil (Go)"]++
+	}
+	if strings.Contains(content, ".catch(") || strings.Contains(content, ".catch (") {
+		counts["promise-catch"]++
+	}
+	if strings.Contains(content, "throw ") {
+		counts["throw-exceptions"]++
+	}
+	if strings.Contains(content, "return nil, err") {
+		counts["return-nil-err (Go)"]++
+	}
+}
+
+func analyzeImports(content, lang string, counts map[string]int) {
+	importLines := 0
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "import ") || strings.HasPrefix(trimmed, "from ") || strings.HasPrefix(trimmed, "require(") {
+			importLines++
+		}
+	}
+	if importLines > 5 {
+		counts["multi-import (>5)"]++
+	} else if importLines > 0 {
+		counts["few-imports (1-5)"]++
+	}
 }
 
 func cmdSetup() {

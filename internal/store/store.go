@@ -843,6 +843,60 @@ func (s *Store) migrate() error {
 	`); err != nil {
 		return err
 	}
+
+	if _, err := s.execHook(s.db, `
+		CREATE TABLE IF NOT EXISTS style_fingerprints (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			category TEXT NOT NULL,
+			pattern TEXT NOT NULL,
+			frequency INTEGER NOT NULL DEFAULT 1,
+			examples TEXT,
+			language TEXT,
+			framework TEXT,
+			project TEXT,
+			confidence REAL NOT NULL DEFAULT 0.5,
+			source TEXT NOT NULL DEFAULT 'learned',
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+			UNIQUE(category, pattern, language, framework)
+		);
+
+		CREATE TABLE IF NOT EXISTS anti_patterns (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			title TEXT NOT NULL,
+			description TEXT NOT NULL,
+			category TEXT NOT NULL,
+			severity TEXT NOT NULL DEFAULT 'warning',
+			language TEXT,
+			framework TEXT,
+			example_bad TEXT,
+			example_good TEXT,
+			occurrence_count INTEGER NOT NULL DEFAULT 1,
+			last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+			project TEXT,
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+		);
+
+		CREATE TABLE IF NOT EXISTS communication_profile (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			category TEXT NOT NULL,
+			preference TEXT NOT NULL,
+			value TEXT NOT NULL,
+			confidence REAL NOT NULL DEFAULT 0.5,
+			source TEXT NOT NULL DEFAULT 'seed',
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+			UNIQUE(category, preference)
+		);
+
+		CREATE INDEX IF NOT EXISTS idx_style_category ON style_fingerprints(category);
+		CREATE INDEX IF NOT EXISTS idx_anti_category ON anti_patterns(category);
+		CREATE INDEX IF NOT EXISTS idx_comm_category ON communication_profile(category);
+	`); err != nil {
+		return err
+	}
+
 	// Backfill: extract project from JSON payload for existing rows with empty project.
 	if _, err := s.execHook(s.db, `
 		UPDATE sync_mutations

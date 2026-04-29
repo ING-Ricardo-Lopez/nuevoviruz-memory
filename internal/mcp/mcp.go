@@ -96,6 +96,12 @@ var ProfileAgent = map[string]bool{
 	"mem_update":            true, // update observation by ID — skills say "use mem_update when you have an exact ID to correct"
 	"mem_current_project":   true, // detect current project — recommended first call for agents (REQ-313)
 	"mem_judge":             true, // record verdict on a pending memory conflict (REQ-003, Phase D)
+	"style_save":            true,
+	"style_search":          true,
+	"antipattern_save":      true,
+	"antipattern_search":    true,
+	"profile_get":           true,
+	"profile_set":           true,
 }
 
 // ProfileAdmin contains tools for TUI, dashboards, and manual curation
@@ -742,6 +748,95 @@ Re-judging an already-judged ID overwrites the verdict (deliberate revision).`),
 				),
 			),
 			queuedWriteHandler(writeQueue, handleJudge(s, activity)),
+		)
+	}
+
+	// ─── style_save (profile: agent) ────────────────────────────────────
+	if shouldRegister("style_save", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("style_save",
+				mcp.WithDescription("Save a coding style pattern observed in the user's code"),
+				mcp.WithTitleAnnotation("Save Style Pattern"),
+				mcp.WithString("category", mcp.Required(), mcp.Description("Category: naming, structure, error_handling, imports, patterns, conventions")),
+				mcp.WithString("pattern", mcp.Required(), mcp.Description("The style pattern observed")),
+				mcp.WithString("examples", mcp.Description("Code examples demonstrating the pattern")),
+				mcp.WithString("language", mcp.Description("Programming language")),
+				mcp.WithString("framework", mcp.Description("Framework used")),
+				mcp.WithString("project", mcp.Description("Project name")),
+				mcp.WithNumber("confidence", mcp.Description("Confidence level 0.0-1.0")),
+			),
+			queuedWriteHandler(writeQueue, handleStyleSave(s, activity)),
+		)
+	}
+
+	// ─── style_search (profile: agent) ─────────────────────────────────
+	if shouldRegister("style_search", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("style_search",
+				mcp.WithDescription("Search the user's coding style patterns"),
+				mcp.WithTitleAnnotation("Search Style Patterns"),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithString("category", mcp.Description("Filter by category")),
+				mcp.WithString("language", mcp.Description("Filter by language")),
+			),
+			handleStyleSearch(s, cfg, activity),
+		)
+	}
+
+	// ─── antipattern_save (profile: agent) ──────────────────────────────
+	if shouldRegister("antipattern_save", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("antipattern_save",
+				mcp.WithDescription("Save an anti-pattern or recurring mistake to avoid"),
+				mcp.WithString("title", mcp.Required(), mcp.Description("Short title of the anti-pattern")),
+				mcp.WithString("description", mcp.Required(), mcp.Description("Why this is bad")),
+				mcp.WithString("category", mcp.Required(), mcp.Description("Category: architecture, security, performance, readability, testing")),
+				mcp.WithString("severity", mcp.Description("warning, error, critical")),
+				mcp.WithString("language", mcp.Description("Programming language")),
+				mcp.WithString("example_bad", mcp.Description("Bad code example")),
+				mcp.WithString("example_good", mcp.Description("Good code example")),
+			),
+			queuedWriteHandler(writeQueue, handleAntiPatternSave(s, activity)),
+		)
+	}
+
+	// ─── antipattern_search (profile: agent) ────────────────────────────
+	if shouldRegister("antipattern_search", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("antipattern_search",
+				mcp.WithDescription("Search anti-patterns to avoid"),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithString("category", mcp.Description("Filter by category")),
+				mcp.WithString("language", mcp.Description("Filter by language")),
+			),
+			handleAntiPatternSearch(s, cfg, activity),
+		)
+	}
+
+	// ─── profile_get (profile: agent) ───────────────────────────────────
+	if shouldRegister("profile_get", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("profile_get",
+				mcp.WithDescription("Get the user's communication and coding preferences"),
+				mcp.WithReadOnlyHintAnnotation(true),
+				mcp.WithString("category", mcp.Description("Filter by category: communication, coding, architecture, debugging")),
+			),
+			handleProfileGet(s, cfg, activity),
+		)
+	}
+
+	// ─── profile_set (profile: agent) ───────────────────────────────────
+	if shouldRegister("profile_set", allowlist) {
+		srv.AddTool(
+			mcp.NewTool("profile_set",
+				mcp.WithDescription("Set a communication or coding preference for the user"),
+				mcp.WithString("category", mcp.Required(), mcp.Description("Category: communication, coding, architecture, debugging")),
+				mcp.WithString("preference", mcp.Required(), mcp.Description("Preference name")),
+				mcp.WithString("value", mcp.Required(), mcp.Description("Preference value")),
+				mcp.WithNumber("confidence", mcp.Description("Confidence 0.0-1.0")),
+				mcp.WithString("source", mcp.Description("Source: seed, learned, manual")),
+			),
+			queuedWriteHandler(writeQueue, handleProfileSet(s, activity)),
 		)
 	}
 }
@@ -1629,6 +1724,143 @@ func handleMergeProjects(s *store.Store) server.ToolHandlerFunc {
 
 // ─── Project Resolution Helpers ──────────────────────────────────────────────
 
+func handleStyleSave(s *store.Store, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		category, _ := req.GetArguments()["category"].(string)
+		pattern, _ := req.GetArguments()["pattern"].(string)
+		examples, _ := req.GetArguments()["examples"].(string)
+		language, _ := req.GetArguments()["language"].(string)
+		framework, _ := req.GetArguments()["framework"].(string)
+		project, _ := req.GetArguments()["project"].(string)
+		confidence := floatArg(req, "confidence", 0.7)
+		if category == "" || pattern == "" {
+			return mcp.NewToolResultError("category and pattern are required"), nil
+		}
+		id, err := s.AddStyleFingerprint(store.AddStyleFingerprintParams{
+			Category: category, Pattern: pattern, Examples: examples,
+			Language: language, Framework: framework, Project: project,
+			Confidence: confidence, Source: "learned",
+		})
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		return mcp.NewToolResultText(fmt.Sprintf("Style pattern saved: #%d [%s] %s", id, category, pattern)), nil
+	}
+}
+
+func handleStyleSearch(s *store.Store, cfg MCPConfig, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		category, _ := req.GetArguments()["category"].(string)
+		language, _ := req.GetArguments()["language"].(string)
+		results, err := s.GetStyleFingerprints(category, language)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		if len(results) == 0 {
+			return mcp.NewToolResultText("No style patterns found."), nil
+		}
+		var b strings.Builder
+		b.WriteString(fmt.Sprintf("Found %d style patterns:\n\n", len(results)))
+		for _, sf := range results {
+			b.WriteString(fmt.Sprintf("- [%s] %s (freq: %d, conf: %.1f, lang: %s)\n", sf.Category, sf.Pattern, sf.Frequency, sf.Confidence, sf.Language))
+			if sf.Examples != "" {
+				b.WriteString(fmt.Sprintf("  Examples: %s\n", sf.Examples))
+			}
+		}
+		return mcp.NewToolResultText(b.String()), nil
+	}
+}
+
+func handleAntiPatternSave(s *store.Store, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		title, _ := req.GetArguments()["title"].(string)
+		description, _ := req.GetArguments()["description"].(string)
+		category, _ := req.GetArguments()["category"].(string)
+		severity, _ := req.GetArguments()["severity"].(string)
+		language, _ := req.GetArguments()["language"].(string)
+		exampleBad, _ := req.GetArguments()["example_bad"].(string)
+		exampleGood, _ := req.GetArguments()["example_good"].(string)
+		if title == "" || description == "" || category == "" {
+			return mcp.NewToolResultError("title, description, and category are required"), nil
+		}
+		if severity == "" {
+			severity = "warning"
+		}
+		id, err := s.AddAntiPattern(store.AddAntiPatternParams{
+			Title: title, Description: description, Category: category,
+			Severity: severity, Language: language,
+			ExampleBad: exampleBad, ExampleGood: exampleGood,
+		})
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		return mcp.NewToolResultText(fmt.Sprintf("Anti-pattern saved: #%d [%s] %s", id, severity, title)), nil
+	}
+}
+
+func handleAntiPatternSearch(s *store.Store, cfg MCPConfig, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		category, _ := req.GetArguments()["category"].(string)
+		language, _ := req.GetArguments()["language"].(string)
+		results, err := s.GetAntiPatterns(category, language)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		if len(results) == 0 {
+			return mcp.NewToolResultText("No anti-patterns found."), nil
+		}
+		var b strings.Builder
+		b.WriteString(fmt.Sprintf("Found %d anti-patterns:\n\n", len(results)))
+		for _, ap := range results {
+			b.WriteString(fmt.Sprintf("- [%s/%s] %s (seen %d times)\n", ap.Severity, ap.Category, ap.Title, ap.OccurrenceCount))
+			b.WriteString(fmt.Sprintf("  %s\n", ap.Description))
+		}
+		return mcp.NewToolResultText(b.String()), nil
+	}
+}
+
+func handleProfileGet(s *store.Store, cfg MCPConfig, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		category, _ := req.GetArguments()["category"].(string)
+		results, err := s.GetCommunicationProfile(category)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		if len(results) == 0 {
+			return mcp.NewToolResultText("No profile preferences found."), nil
+		}
+		envelope := map[string]any{"preferences": results}
+		out, _ := jsonMarshal(envelope)
+		return mcp.NewToolResultText(string(out)), nil
+	}
+}
+
+func handleProfileSet(s *store.Store, activity *SessionActivity) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		category, _ := req.GetArguments()["category"].(string)
+		preference, _ := req.GetArguments()["preference"].(string)
+		value, _ := req.GetArguments()["value"].(string)
+		confidence := floatArg(req, "confidence", 0.7)
+		source, _ := req.GetArguments()["source"].(string)
+		if source == "" {
+			source = "learned"
+		}
+		if category == "" || preference == "" || value == "" {
+			return mcp.NewToolResultError("category, preference, and value are required"), nil
+		}
+		id, err := s.SetCommunicationPreference(store.SetCommunicationPreferenceParams{
+			Category: category, Preference: preference, Value: value,
+			Confidence: confidence, Source: source,
+		})
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		return mcp.NewToolResultText(fmt.Sprintf("Preference saved: #%d [%s] %s = %s", id, category, preference, value)), nil
+	}
+}
+
+// ─── Project Resolution Helpers ──────────────────────────────────────────────
+
 // unknownProjectError is returned when a read tool receives a project override
 // that does not exist in the store.
 type unknownProjectError struct {
@@ -1750,6 +1982,14 @@ func intArg(req mcp.CallToolRequest, key string, defaultVal int) int {
 
 func boolArg(req mcp.CallToolRequest, key string, defaultVal bool) bool {
 	v, ok := req.GetArguments()[key].(bool)
+	if !ok {
+		return defaultVal
+	}
+	return v
+}
+
+func floatArg(req mcp.CallToolRequest, key string, defaultVal float64) float64 {
+	v, ok := req.GetArguments()[key].(float64)
 	if !ok {
 		return defaultVal
 	}
