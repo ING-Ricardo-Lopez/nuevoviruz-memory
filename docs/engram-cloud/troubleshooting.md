@@ -46,10 +46,10 @@ engram sync --cloud --project <project>
 Cloud auth token is runtime config:
 
 ```bash
-export ENGRAM_CLOUD_TOKEN="your-token"
+export NV_CLOUD_TOKEN="your-token"
 ```
 
-The local `~/.engram/cloud.json` stores the server URL. The token is intentionally read from the environment.
+The local `~/.nuevoviruz/cloud.json` stores the server URL. The token is intentionally read from the environment.
 
 ---
 
@@ -271,11 +271,11 @@ tools/repair-missing-session-directory.sh --apply --seq 873 sias-app C:/Users/us
 If you want to inspect before using the helper:
 
 ```bash
-sqlite3 ~/.engram/engram.db "select seq, entity, op, entity_key, payload from sync_mutations where seq = 873;"
-sqlite3 ~/.engram/engram.db "select id, project, directory from sessions where id = 'manual-save-current';"
-sqlite3 ~/.engram/engram.db "select id, project, started_at, directory from sessions where project = '<project>' and (directory is null or directory = '');"
-sqlite3 ~/.engram/engram.db "select s.id, s.project, s.started_at, s.directory from sessions s where (s.directory is null or s.directory = '') and (s.project = '<project>' or s.id in (select session_id from observations where ifnull(project, '') = '<project>' union select session_id from user_prompts where ifnull(project, '') = '<project>'));"
-sqlite3 ~/.engram/engram.db "select o.id, ifnull(o.sync_id, '') as sync_id, ifnull(o.session_id, '') as session_id, ifnull(o.project, '') as project, ifnull(o.type, '') as type, ifnull(o.title, '') as title, ifnull(o.scope, '') as scope from observations o where (ifnull(o.project, '') = '<project>' or (ifnull(o.project, '') = '' and o.session_id in (select id from sessions where ifnull(project, '') = '<project>'))) and (ifnull(o.sync_id, '') = '' or ifnull(o.session_id, '') = '' or ifnull(o.type, '') = '' or ifnull(o.title, '') = '' or ifnull(o.content, '') = '' or ifnull(o.scope, '') = '');"
+sqlite3 ~/.nuevoviruz/engram.db "select seq, entity, op, entity_key, payload from sync_mutations where seq = 873;"
+sqlite3 ~/.nuevoviruz/engram.db "select id, project, directory from sessions where id = 'manual-save-current';"
+sqlite3 ~/.nuevoviruz/engram.db "select id, project, started_at, directory from sessions where project = '<project>' and (directory is null or directory = '');"
+sqlite3 ~/.nuevoviruz/engram.db "select s.id, s.project, s.started_at, s.directory from sessions s where (s.directory is null or s.directory = '') and (s.project = '<project>' or s.id in (select session_id from observations where ifnull(project, '') = '<project>' union select session_id from user_prompts where ifnull(project, '') = '<project>'));"
+sqlite3 ~/.nuevoviruz/engram.db "select o.id, ifnull(o.sync_id, '') as sync_id, ifnull(o.session_id, '') as session_id, ifnull(o.project, '') as project, ifnull(o.type, '') as type, ifnull(o.title, '') as title, ifnull(o.scope, '') as scope from observations o where (ifnull(o.project, '') = '<project>' or (ifnull(o.project, '') = '' and o.session_id in (select id from sessions where ifnull(project, '') = '<project>'))) and (ifnull(o.sync_id, '') = '' or ifnull(o.session_id, '') = '' or ifnull(o.type, '') = '' or ifnull(o.title, '') = '' or ifnull(o.content, '') = '' or ifnull(o.scope, '') = '');"
 ```
 
 Do not manually edit SQLite without a backup.
@@ -293,8 +293,8 @@ Do not manually edit SQLite without a backup.
 | `sessions[N].directory is required` | Run the missing session directory helper with `--fix-empty-sessions` or `--all` |
 | `observation payload title is required for upsert` | Run the missing session directory helper; it also repairs missing observation payload fields from local `observations` |
 | `observations[N].title is required` | Run the missing session directory helper with `--fix-empty-observations` or `--all` |
-| `401` or `auth_required` | Check `ENGRAM_CLOUD_TOKEN` on the client and server |
-| `403` or `policy_forbidden` | Check `ENGRAM_CLOUD_ALLOWED_PROJECTS` on the server |
+| `401` or `auth_required` | Check `NV_CLOUD_TOKEN` on the client and server |
+| `403` or `policy_forbidden` | Check `NV_CLOUD_ALLOWED_PROJECTS` on the server |
 | `server_unsupported` | Redeploy a cloud server with mutation endpoints |
 
 ---

@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	projectpkg "github.com/Gentleman-Programming/engram/internal/project"
-	"github.com/Gentleman-Programming/engram/internal/store"
+	projectpkg "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/project"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -101,9 +101,9 @@ var ProfileAgent = map[string]bool{
 // ProfileAdmin contains tools for TUI, dashboards, and manual curation
 // that are NOT referenced in any agent skill or memory protocol.
 var ProfileAdmin = map[string]bool{
-	"mem_delete":         true, // only in OpenCode's ENGRAM_TOOLS filter, not in any agent instructions
-	"mem_stats":          true, // only in OpenCode's ENGRAM_TOOLS filter, not in any agent instructions
-	"mem_timeline":       true, // only in OpenCode's ENGRAM_TOOLS filter, not in any agent instructions
+	"mem_delete":         true, // only in OpenCode's NV_TOOLS filter, not in any agent instructions
+	"mem_stats":          true, // only in OpenCode's NV_TOOLS filter, not in any agent instructions
+	"mem_timeline":       true, // only in OpenCode's NV_TOOLS filter, not in any agent instructions
 	"mem_merge_projects": true, // destructive curation tool — not for agent use
 }
 
@@ -217,7 +217,7 @@ func NewServerWithConfig(s *store.Store, cfg MCPConfig, allowlist map[string]boo
 
 func newServerWithActivity(s *store.Store, cfg MCPConfig, allowlist map[string]bool, activity *SessionActivity) *server.MCPServer {
 	srv := server.NewMCPServer(
-		"engram",
+		"nuevoviruz",
 		"0.1.0",
 		server.WithToolCapabilities(true),
 		server.WithInstructions(serverInstructions),

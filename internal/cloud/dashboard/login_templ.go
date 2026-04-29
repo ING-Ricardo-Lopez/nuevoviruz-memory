@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 // LoginPage renders the standalone login page (no layout wrapper).
 // ADAPTED: added next string parameter for post-login redirect; token-only form
-// (integrated dashboard uses ENGRAM_CLOUD_TOKEN, not user/password credentials).
+// (integrated dashboard uses NV_CLOUD_TOKEN, not user/password credentials).
 func LoginPage(errorMsg string, next string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context

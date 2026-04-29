@@ -6,7 +6,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## Where to Find Release Notes
 
-Full release notes with changelogs per version live on the **[GitHub Releases page](https://github.com/Gentleman-Programming/engram/releases)**.
+Full release notes with changelogs per version live on the **[GitHub Releases page](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases)**.
 
 GoReleaser generates them automatically from commits, filtering by type:
 - `feat:` / `fix:` / `refactor:` / `chore:` commits appear in the release notes
@@ -41,7 +41,7 @@ New and updated routes registered in `internal/cloud/dashboard/dashboard.go`:
 
 Background mutation-based replication for `engram serve` and `engram mcp`:
 
-- **feat(autosync):** `internal/cloud/autosync.Manager` — lease-guarded background push/pull goroutine enabled by `ENGRAM_CLOUD_AUTOSYNC=1` + `ENGRAM_CLOUD_TOKEN` + `ENGRAM_CLOUD_SERVER`
+- **feat(autosync):** `internal/cloud/autosync.Manager` — lease-guarded background push/pull goroutine enabled by `NV_CLOUD_AUTOSYNC=1` + `NV_CLOUD_TOKEN` + `NV_CLOUD_SERVER`
 - **feat(cloudserver):** add `POST /sync/mutations/push` (batch up to 100 mutations, 8 MiB body cap, per-project auth + pause gate returning HTTP 409 `sync-paused`)
 - **feat(cloudserver):** add `GET /sync/mutations/pull?since_seq=N&limit=M` (server-side filtered by enrolled projects; fail-closed when `EnrolledProjectsProvider` not implemented)
 - **feat(autosync):** phases: `idle`, `pushing`, `pulling`, `healthy`, `push_failed`, `pull_failed`, `backoff`, `disabled`
@@ -71,6 +71,6 @@ Returns detection result including `project`, `project_source`, `project_path`, 
 - **feat(project):** add project name auto-detection via git remote and normalization (lowercase + trim + collapse) on all read/write paths
 - **feat(cli):** add `engram projects list|consolidate|prune` commands for project hygiene
 - **feat(mcp):** add `mem_merge_projects` tool for agent-driven project consolidation
-- **feat(mcp):** auto-detect project at MCP startup via `--project` flag, `ENGRAM_PROJECT` env, or git remote
+- **feat(mcp):** auto-detect project at MCP startup via `--project` flag, `NV_PROJECT` env, or git remote
 - **feat(mcp):** similar-project warnings when saving to a new project that resembles an existing one
 - **fix(sync):** use git remote detection instead of `filepath.Base(cwd)` for project name

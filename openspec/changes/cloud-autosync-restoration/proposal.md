@@ -2,7 +2,7 @@
 
 ## Intent
 
-Integrated `feat/integrate-engram-cloud` deliberately stubbed autosync — `ENGRAM_CLOUD_AUTOSYNC=1` fatals, `PushMutations`/`PullMutations` return "not available", and `cloudserver` has no `/sync/mutations/*` routes. Users must run explicit sync commands and teammate memories never flow back automatically. Restore the 451-line legacy manager from `engram-cloud`, adapt it to token auth + project-scoped enrollment + the dashboard status contract, and ship the missing cloudserver endpoints so local ↔ cloud sync runs silently in the background.
+Integrated `feat/integrate-engram-cloud` deliberately stubbed autosync — `NV_CLOUD_AUTOSYNC=1` fatals, `PushMutations`/`PullMutations` return "not available", and `cloudserver` has no `/sync/mutations/*` routes. Users must run explicit sync commands and teammate memories never flow back automatically. Restore the 451-line legacy manager from `engram-cloud`, adapt it to token auth + project-scoped enrollment + the dashboard status contract, and ship the missing cloudserver endpoints so local ↔ cloud sync runs silently in the background.
 
 ## Scope
 
@@ -51,8 +51,8 @@ Layered port with thin adaptations — avoid reinvention.
 | 4 | Backoff strategy | Match legacy exactly: base 1s, max 5min, exponential × 2, ±25% jitter, ceiling 10 consecutive failures → `PhaseBackoff`. | Proven in production; diverging invites regressions. |
 | 5 | `StopForUpgrade`/`ResumeAfterUpgrade` | Promote to first-class Manager methods. `StopForUpgrade` sets `PhaseDisabled` + drains Run goroutine without releasing lease. `ResumeAfterUpgrade` re-enters `PhaseIdle` and re-arms the cycle. | Integrated upgrade-path change relies on these; must survive the port or we break `cloud-upgrade-path-existing-users`. |
 | 6 | Status integration | `autosyncStatusAdapter.Status(project)` returns autosync phase+reason for every project; falls back to `storeSyncStatusProvider` when manager is nil. Reuse `reason_code`/`reason_message` contract. `PhaseHealthy`→healthy, `PhaseBackoff`→degraded+`transport_failed`, `PhasePushFailed`/`PhasePullFailed`→degraded+last error, `PhaseDisabled`→upgrade_paused. | Single status pipeline into dashboard, no new UI work. |
-| 7 | Auto-enable vs opt-in | Keep explicit opt-in: `ENGRAM_CLOUD_AUTOSYNC=1` required even when token+server are set. | Safer rollout; prevents surprise sync on existing setups after upgrade. Revisit for opt-out in a follow-up once stable. |
-| 8 | Deployment ordering | Server endpoints MUST deploy to `engram.condetuti.com` BEFORE clients enable autosync. Document this in `DOCS.md` rollout section and add a startup log warning when `ENGRAM_CLOUD_AUTOSYNC=1` but first push returns 404 (→ `PhaseBackoff` with reason `server_unsupported`). | Client auto-disables loudly instead of failing silently, per engram-business-rules. |
+| 7 | Auto-enable vs opt-in | Keep explicit opt-in: `NV_CLOUD_AUTOSYNC=1` required even when token+server are set. | Safer rollout; prevents surprise sync on existing setups after upgrade. Revisit for opt-out in a follow-up once stable. |
+| 8 | Deployment ordering | Server endpoints MUST deploy to `engram.condetuti.com` BEFORE clients enable autosync. Document this in `DOCS.md` rollout section and add a startup log warning when `NV_CLOUD_AUTOSYNC=1` but first push returns 404 (→ `PhaseBackoff` with reason `server_unsupported`). | Client auto-disables loudly instead of failing silently, per engram-business-rules. |
 
 ## Affected Areas
 
@@ -76,14 +76,14 @@ Layered port with thin adaptations — avoid reinvention.
 | Transport constructor confusion (which to use when) | Med | Separate `NewMutationTransport` + godoc on both constructors + test coverage per constructor. |
 | Status adapter race against `storeSyncStatusProvider` | Med | Adapter owns composition; when manager non-nil it wins, when nil store fallback — single resolver, no double-write. |
 | Goroutine panic takes down server | Low | `recover()` wrapper on Run; panic sets `PhaseBackoff` with reason `internal_error` and logs. |
-| Env semantic flip (`ENGRAM_CLOUD_AUTOSYNC=1` was fatal, now opt-in) | Med | Inverted tests explicitly assert new semantics; CHANGELOG/DOCS call out the shift. |
+| Env semantic flip (`NV_CLOUD_AUTOSYNC=1` was fatal, now opt-in) | Med | Inverted tests explicitly assert new semantics; CHANGELOG/DOCS call out the shift. |
 | Pull leaks cross-tenant mutations | High | Server-side enrollment filter in pull handler; integration test asserts caller only receives their enrolled projects' mutations. |
 | Lease starvation in multi-process deploys | Low | 60s lease interval matches legacy; lease-miss is logged at debug, not error. |
 | Local writes blocked when cloud unreachable | High | Autosync runs in its own goroutine; never holds locks across network I/O; integration test asserts local write latency unaffected during transport 500s. |
 
 ## Rollback Plan
 
-Revert the batch commits in reverse order: (5) docs, (4) cmdServe wiring → restore fatal, (3) status adapter, (2) manager port → restore stub, (1) server endpoints + transport. Each batch is independently revertable because earlier batches add server surface that is backwards compatible (new routes, no schema changes). If only client misbehaves, flip `ENGRAM_CLOUD_AUTOSYNC` off — server endpoints stay deployed harmlessly.
+Revert the batch commits in reverse order: (5) docs, (4) cmdServe wiring → restore fatal, (3) status adapter, (2) manager port → restore stub, (1) server endpoints + transport. Each batch is independently revertable because earlier batches add server surface that is backwards compatible (new routes, no schema changes). If only client misbehaves, flip `NV_CLOUD_AUTOSYNC` off — server endpoints stay deployed harmlessly.
 
 ## Dependencies
 
@@ -94,7 +94,7 @@ Revert the batch commits in reverse order: (5) docs, (4) cmdServe wiring → res
 
 ## Success Criteria
 
-- [ ] `ENGRAM_CLOUD_AUTOSYNC=1` + token + server → background loop starts in serve and MCP; no fatal.
+- [ ] `NV_CLOUD_AUTOSYNC=1` + token + server → background loop starts in serve and MCP; no fatal.
 - [ ] Local write triggers push within 500ms debounce; mutation appears on cloud within one cycle.
 - [ ] Teammate mutation on cloud appears locally within 30s poll (or immediately after next dirty trigger).
 - [ ] Only enrolled-project mutations are pushed; unenrolled are skip-acked (observable in store).

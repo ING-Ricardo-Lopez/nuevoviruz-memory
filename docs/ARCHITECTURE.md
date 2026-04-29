@@ -141,7 +141,7 @@ engram/
 │       ├── update.go               # Input handling, per-screen handlers
 │       └── view.go                 # Rendering, per-screen views
 ├── plugin/
-│   ├── opencode/engram.ts          # OpenCode adapter plugin
+│   ├── opencode/nuevoviruz.ts          # OpenCode adapter plugin
 │   └── claude-code/                # Claude Code plugin (hooks + skill)
 │       ├── .claude-plugin/plugin.json
 │       ├── .mcp.json
@@ -173,7 +173,7 @@ engram context [project]  Recent context from previous sessions
 engram stats              Memory statistics
 engram export [file]      Export all memories to JSON
 engram import <file>      Import memories from JSON
-engram sync               Export new memories as compressed chunk to .engram/
+engram sync               Export new memories as compressed chunk to .nuevoviruz/
 engram sync --all         Export ALL projects (ignore directory-based filter)
 engram sync --cloud --project <name>
                           Sync against configured cloud endpoint (project-scoped)
@@ -195,9 +195,9 @@ engram version            Show version
 Cloud constraints (current behavior):
 
 - Cloud is opt-in replication/shared access; local SQLite remains source of truth.
-- `engram cloud serve` requires `ENGRAM_CLOUD_ALLOWED_PROJECTS` in both token-auth and insecure no-auth mode.
-- Authenticated cloud serve requires `ENGRAM_CLOUD_TOKEN` + explicit non-default `ENGRAM_JWT_SECRET`.
-- Insecure local-dev mode (`ENGRAM_CLOUD_INSECURE_NO_AUTH=1`) still requires the project allowlist and must not be used in production.
+- `engram cloud serve` requires `NV_CLOUD_ALLOWED_PROJECTS` in both token-auth and insecure no-auth mode.
+- Authenticated cloud serve requires `NV_CLOUD_TOKEN` + explicit non-default `NV_JWT_SECRET`.
+- Insecure local-dev mode (`NV_CLOUD_INSECURE_NO_AUTH=1`) still requires the project allowlist and must not be used in production.
 
 Cloud route/auth split (current behavior):
 
@@ -207,7 +207,7 @@ Cloud route/auth split (current behavior):
 - Dashboard protected routes: `GET /dashboard`, `/dashboard/stats`, `/dashboard/activity`, `/dashboard/browser` (`/observations`, `/sessions`, `/sessions/{sessionID}`, `/prompts`), `/dashboard/projects`, `/dashboard/projects/list`, `/dashboard/projects/{project}`, `/dashboard/projects/{name}/observations|sessions|prompts`, `/dashboard/contributors`, `/dashboard/contributors/list`, `/dashboard/contributors/{contributor}`, `/dashboard/admin`, `/dashboard/admin/projects`, `/dashboard/admin/users`, `/dashboard/admin/users/list`, `/dashboard/admin/health`, `POST /dashboard/admin/projects/{name}/sync`, `/dashboard/sessions/{project}/{sessionID}`, `/dashboard/observations/{project}/{sessionID}/{syncID}`, `/dashboard/prompts/{project}/{sessionID}/{syncID}`.
 - Note: `/dashboard/admin/contributors` was removed; user/contributor management lives under `/dashboard/admin/users`.
 - In authenticated mode, protected dashboard routes require a signed dashboard cookie (obtained via `/dashboard/login` + bearer token) and do not accept direct bearer headers as a browser session substitute.
-- In insecure mode (`ENGRAM_CLOUD_INSECURE_NO_AUTH=1` with no bearer token), dashboard auth is bypassed and `/dashboard/login` redirects to `/dashboard/`.
+- In insecure mode (`NV_CLOUD_INSECURE_NO_AUTH=1` with no bearer token), dashboard auth is bypassed and `/dashboard/login` redirects to `/dashboard/`.
 
 ---
 
@@ -261,7 +261,7 @@ Path values are extracted via `r.PathValue(name)` (Go 1.22 `net/http.ServeMux`).
 
 ## Cloud Autosync Manager
 
-`internal/cloud/autosync/Manager` is a lease-guarded background goroutine started by `engram serve` and `engram mcp` when `ENGRAM_CLOUD_AUTOSYNC=1`. It implements the local-first invariant: all network I/O happens in its own goroutine and never holds locks shared with the SQLite write path.
+`internal/cloud/autosync/Manager` is a lease-guarded background goroutine started by `engram serve` and `engram mcp` when `NV_CLOUD_AUTOSYNC=1`. It implements the local-first invariant: all network I/O happens in its own goroutine and never holds locks shared with the SQLite write path.
 
 ### Data flow
 

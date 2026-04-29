@@ -10,13 +10,13 @@
 //
 // Directory structure:
 //
-//	.engram/
+//	.nuevoviruz/
 //	├── manifest.json          ← index of all chunks (small, mergeable)
 //	├── chunks/
 //	│   ├── a3f8c1d2.jsonl.gz ← chunk 1 (compressed)
 //	│   ├── b7d2e4f1.jsonl.gz ← chunk 2
 //	│   └── ...
-//	└── engram.db              ← local working DB (gitignored)
+//	└── nuevoviruz.db              ← local working DB (gitignored)
 package sync
 
 import (
@@ -31,8 +31,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec"
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 )
 
 var (
@@ -117,7 +117,7 @@ type ImportResult struct {
 // Syncer handles exporting and importing memory chunks.
 type Syncer struct {
 	store     *store.Store
-	syncDir   string    // Path to .engram/ in the project repo (kept for backward compat)
+	syncDir   string    // Path to .nuevoviruz/ in the project repo (kept for backward compat)
 	transport Transport // Pluggable I/O backend (filesystem, remote, etc.)
 	cloudMode bool
 	project   string

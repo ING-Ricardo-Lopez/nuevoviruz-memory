@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/project"
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/project"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 	mcppkg "github.com/mark3labs/mcp-go/mcp"
 )
 

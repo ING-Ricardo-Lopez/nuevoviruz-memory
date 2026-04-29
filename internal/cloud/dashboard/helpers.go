@@ -12,7 +12,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud/cloudstore"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore"
 )
 
 // ─── Pagination ─────────────────────────────────────────────────────────────

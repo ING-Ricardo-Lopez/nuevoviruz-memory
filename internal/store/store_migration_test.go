@@ -32,7 +32,7 @@ func newTestStoreWithLegacySchema(t *testing.T, fixtureRows []legacyObsRow) *Sto
 	t.Helper()
 
 	dir := t.TempDir()
-	dbPath := filepath.Join(dir, "engram.db")
+	dbPath := filepath.Join(dir, "nuevoviruz.db")
 
 	// 1. Open raw DB and apply legacy DDL.
 	raw, err := sql.Open("sqlite", dbPath)

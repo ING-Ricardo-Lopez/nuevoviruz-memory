@@ -30,7 +30,7 @@ Agent (Claude Code / OpenCode / Gemini CLI / Codex / VS Code / Antigravity / ...
     ↓ MCP stdio
 Engram (single Go binary)
     ↓
-SQLite + FTS5 (~/.engram/engram.db)
+SQLite + FTS5 (~/.nuevoviruz/engram.db)
 ```
 
 ## Quick Start
@@ -104,7 +104,7 @@ Local SQLite remains the source of truth. Cloud integration is opt-in replicatio
 
 ```bash
 engram sync                    # Export new memories as compressed chunk
-git add .engram/ && git commit -m "sync engram memories"
+git add .nuevoviruz/ && git commit -m "sync engram memories"
 engram sync --import           # On another machine: import new chunks
 engram sync --status           # Check sync status
 ```
@@ -213,6 +213,6 @@ MIT
 
 ## Contributors
 
-<a href="https://github.com/Gentleman-Programming/engram/graphs/contributors">
+<a href="https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Gentleman-Programming/engram&max=100" />
 </a>

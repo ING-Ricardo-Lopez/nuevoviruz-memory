@@ -27,11 +27,11 @@ The integrated file has 23 lines and defines only `StatusBadge`, `EmptyState`, a
 ```go
 import (
     "fmt"
-    "github.com/Gentleman-Programming/engram-cloud/internal/cloud/cloudstore"
+    "github.com/ING-Ricardo-Lopez/nuevoviruz-memory-cloud/internal/cloud/cloudstore"
 )
 ```
 
-**Adaptation required**: change import path to `github.com/Gentleman-Programming/engram/internal/cloud/cloudstore`. All type references must use the integrated `cloudstore` types. The integrated `cloudstore` exposes `DashboardProjectRow`, `DashboardContributorRow`, `DashboardSessionRow`, `DashboardObservationRow`, `DashboardPromptRow`, `DashboardProjectDetail`, and `DashboardAdminOverview` (all defined in `dashboard_queries.go`).
+**Adaptation required**: change import path to `github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore`. All type references must use the integrated `cloudstore` types. The integrated `cloudstore` exposes `DashboardProjectRow`, `DashboardContributorRow`, `DashboardSessionRow`, `DashboardObservationRow`, `DashboardPromptRow`, `DashboardProjectDetail`, and `DashboardAdminOverview` (all defined in `dashboard_queries.go`).
 
 Legacy `components.templ` references 12 cloudstore types:
 - `cloudstore.ProjectStat` — NOT in integrated cloudstore (it's a legacy type from the old SQL-backed cloudstore). Used by `DashboardStatsPartial`, `DashboardActivityPartial`, `ProjectsListPartial`. **Must be replaced** with `DashboardProjectRow` or a new `ProjectStat` adapter.
@@ -202,7 +202,7 @@ The integrated dashboard uses a `RequireSession func(r *http.Request) error` clo
 2. All handlers calling `getUsernameFromContext` must be changed to `h.cfg.GetDisplayName(r)`
 3. In `cloudserver.go:routes()`, wire `GetDisplayName` from the session cookie (parse the admin token or use a static "OPERATOR" if no name is available from the bearer token)
 
-**No JWT claims bridge needed** — the signed `engram_dashboard_token` cookie is already parsed by `authorizeDashboardRequest` via `dashboardBearerToken`. The bearer token itself is the `ENGRAM_CLOUD_TOKEN` (a static bearer) or the admin token. There is no username/email claim in this token flow.
+**No JWT claims bridge needed** — the signed `engram_dashboard_token` cookie is already parsed by `authorizeDashboardRequest` via `dashboardBearerToken`. The bearer token itself is the `NV_CLOUD_TOKEN` (a static bearer) or the admin token. There is no username/email claim in this token flow.
 
 ---
 
@@ -212,7 +212,7 @@ The integrated dashboard uses a `RequireSession func(r *http.Request) error` clo
 
 **File**: `cmd/engram/cloud.go:92–101` and `internal/cloud/cloudserver/cloudserver.go:167–171`
 
-In `newCloudRuntime` (cloud.go:90): `insecureNoAuth := token == "" && envBool("ENGRAM_CLOUD_INSECURE_NO_AUTH")`. When `insecureNoAuth` is true, `authenticator` is set to `nil`.
+In `newCloudRuntime` (cloud.go:90): `insecureNoAuth := token == "" && envBool("NV_CLOUD_INSECURE_NO_AUTH")`. When `insecureNoAuth` is true, `authenticator` is set to `nil`.
 
 In `cloudserver.go:routes()` (lines 168–171):
 ```go
@@ -286,7 +286,7 @@ if s.auth == nil {
 
 **Real gap from memory #2375**: The gap was that in insecure mode the runtime constructs a JWT auth service unconditionally. Looking at `cloud.go:90–101`:
 ```go
-insecureNoAuth := token == "" && envBool("ENGRAM_CLOUD_INSECURE_NO_AUTH")
+insecureNoAuth := token == "" && envBool("NV_CLOUD_INSECURE_NO_AUTH")
 var authenticator cloudserver.Authenticator
 if !insecureNoAuth {
     authSvc, err := auth.NewService(cs, cfg.JWTSecret)
@@ -296,7 +296,7 @@ if !insecureNoAuth {
 ```
 This is already conditioned. `auth.NewService` is NOT called in insecure mode. The fix is already in place in the current branch. **Gap 2 as stated in memory #2375 may have been fixed** in the current `feat/integrate-engram-cloud` branch. Verify with tests.
 
-**Remaining actual gap**: When `insecureNoAuth = false` but `ENGRAM_CLOUD_TOKEN` is set, `auth.NewService` is called, and `authSvc.SetDashboardSessionTokens([]string{cfg.AdminToken})` is called with potentially an empty `AdminToken`. This is safe (empty slice entry is ignored). No gap here.
+**Remaining actual gap**: When `insecureNoAuth = false` but `NV_CLOUD_TOKEN` is set, `auth.NewService` is called, and `authSvc.SetDashboardSessionTokens([]string{cfg.AdminToken})` is called with potentially an empty `AdminToken`. This is safe (empty slice entry is ignored). No gap here.
 
 **Conclusion**: The insecure-mode gaps from memory #2375 are largely mitigated in the current integrated branch. The remaining UX issue is that the login page in insecure mode redirects immediately (correct behavior), so no fix needed for visual parity.
 

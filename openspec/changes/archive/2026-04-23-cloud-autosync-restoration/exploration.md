@@ -64,15 +64,15 @@ The local SQLite store already has:
 
 ## Auth bridge adaptation
 
-Legacy used JWT credential flow. Integrated uses `ENGRAM_CLOUD_TOKEN` bearer. The autosync transport must:
+Legacy used JWT credential flow. Integrated uses `NV_CLOUD_TOKEN` bearer. The autosync transport must:
 - Read token from env/config via `resolveCloudRuntimeConfig`
 - Set `Authorization: Bearer <token>` on push/pull requests
 - Handle 401/403 as `PhasePushFailed`/`PhasePullFailed`
 
 ## Runtime wiring
 
-- Env toggle: `ENGRAM_CLOUD_AUTOSYNC=1` enables the loop (currently fatals).
-- Auto-enable when `ENGRAM_CLOUD_TOKEN` + `ENGRAM_CLOUD_SERVER` both set.
+- Env toggle: `NV_CLOUD_AUTOSYNC=1` enables the loop (currently fatals).
+- Auto-enable when `NV_CLOUD_TOKEN` + `NV_CLOUD_SERVER` both set.
 - Status wiring: autosync phase → `/sync/status` endpoint → dashboard status pill (reuses existing reason_code/reason_message contract from `integrate-engram-cloud`).
 
 ## Project-scoped sync
@@ -103,7 +103,7 @@ No new dashboard code needed — the existing reason_code/reason_message pipelin
 2. **Transport `NewRemoteTransport` project-scope coupling** — blocks autosync reuse
 3. **`server.SyncStatusProvider.Status(project string)` interface mismatch** with legacy `Status()` — adapter required
 4. **`StopForUpgrade`/`ResumeAfterUpgrade`** exist only in stub, not in engram-cloud manager — must ADD to ported manager (they were introduced post-stub for the upgrade-path change)
-5. **Env var semantic flip** — `ENGRAM_CLOUD_AUTOSYNC=1` goes from "fatal error" to "enable" — tests must be updated
+5. **Env var semantic flip** — `NV_CLOUD_AUTOSYNC=1` goes from "fatal error" to "enable" — tests must be updated
 6. **Goroutine leaks** if Manager panic — add recover() wrapper
 7. **Local-first invariant** — autosync must never block local writes if cloud is unreachable
 8. **Pull conflicts** — dedup semantics preserved via content addressing; verify no loss on concurrent writes

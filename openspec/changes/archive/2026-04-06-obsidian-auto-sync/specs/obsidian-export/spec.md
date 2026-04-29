@@ -251,7 +251,7 @@ On SIGINT (Ctrl+C) or SIGTERM, the system MUST:
 - THEN the current cycle completes
 - AND "shutting down watch mode" is logged
 - AND the process exits with code 0
-- AND `.engram-sync-state.json` is valid (not corrupted)
+- AND `.nuevoviruz-sync-state.json` is valid (not corrupted)
 
 ---
 

@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 )
 
 var loadServerStats = func(s *store.Store) (*store.Stats, error) {
@@ -94,7 +94,7 @@ func (s *Server) Start() error {
 	if err != nil {
 		return fmt.Errorf("engram server: listen %s: %w", addr, err)
 	}
-	log.Printf("[engram] HTTP server listening on %s", addr)
+	log.Printf("[nuevoviruz] HTTP server listening on %s", addr)
 	return serveFn(ln, s.mux)
 }
 
@@ -514,7 +514,7 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Disposition", "attachment; filename=engram-export.json")
+	w.Header().Set("Content-Disposition", "attachment; filename=nuevoviruz-export.json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(data)
 }
@@ -621,7 +621,7 @@ func (s *Server) handleMigrateProject(w http.ResponseWriter, r *http.Request) {
 
 	result, err := s.store.MigrateProject(body.OldProject, body.NewProject)
 	if err != nil {
-		log.Printf("[engram] project migration failed: %v", err)
+		log.Printf("[nuevoviruz] project migration failed: %v", err)
 		jsonError(w, http.StatusInternalServerError, "migration failed")
 		return
 	}
@@ -631,7 +631,7 @@ func (s *Server) handleMigrateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[engram] migrated project %q → %q (obs: %d, sessions: %d, prompts: %d)",
+	log.Printf("[nuevoviruz] migrated project %q → %q (obs: %d, sessions: %d, prompts: %d)",
 		body.OldProject, body.NewProject,
 		result.ObservationsUpdated, result.SessionsUpdated, result.PromptsUpdated)
 

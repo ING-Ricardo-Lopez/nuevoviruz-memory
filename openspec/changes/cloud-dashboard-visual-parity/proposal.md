@@ -2,7 +2,7 @@
 
 ## Intent
 
-Restore full visual and interaction parity between the integrated engram dashboard (`internal/cloud/dashboard/`) and the deployed `work/engram-cloud` dashboard WITHOUT changing the auth model (`ENGRAM_CLOUD_TOKEN` + signed `engram_dashboard_token` cookie + synthetic Principal), the sync write contract, or the chunk-centric cloudstore boundary. The previous change `cloud-dashboard-parity` validated routes and auth redirects but left static assets as byte-size placeholders and `*.templ` files as 23–63 line stubs; the deployed dashboard shows a raw Pico-CSS fallback shell with no HTMX nav, no status ribbon, no footer, no project tabs, no admin toggles. This change completes the port verbatim (95 %) with surgical type-system adaptation (4 %) and a small amount of new glue (1 %) for the auth bridge, pagination, and the SystemHealth/ProjectSyncControl surfaces the integrated cloudstore does not yet expose.
+Restore full visual and interaction parity between the integrated engram dashboard (`internal/cloud/dashboard/`) and the deployed `work/engram-cloud` dashboard WITHOUT changing the auth model (`NV_CLOUD_TOKEN` + signed `engram_dashboard_token` cookie + synthetic Principal), the sync write contract, or the chunk-centric cloudstore boundary. The previous change `cloud-dashboard-parity` validated routes and auth redirects but left static assets as byte-size placeholders and `*.templ` files as 23–63 line stubs; the deployed dashboard shows a raw Pico-CSS fallback shell with no HTMX nav, no status ribbon, no footer, no project tabs, no admin toggles. This change completes the port verbatim (95 %) with surgical type-system adaptation (4 %) and a small amount of new glue (1 %) for the auth bridge, pagination, and the SystemHealth/ProjectSyncControl surfaces the integrated cloudstore does not yet expose.
 
 ## Scope
 
@@ -124,11 +124,11 @@ Reference: engram memory topic `sdd/cloud-dashboard-visual-parity/copy-strategy`
 3. **Static assets** (batch 2): copy `htmx.min.js`, `pico.min.css`, `styles.css` byte-for-byte. `TestStaticAssetsExceedSizeFloors` goes GREEN.
 4. **Cloudstore extensions** (batch 3): extend flat rows with detail fields, add paginated methods, add `SystemHealth`, add `project_controls.go` (SQL table + methods). `TestCloudstoreSystemHealthAggregates` + `TestProjectSyncControlPersists` GREEN.
 5. **`DashboardStore` interface** (batch 3): add matching methods + `GetDisplayName` field to `MountConfig`.
-6. **Templ source ports** (batch 3): `components.templ`, `layout.templ`, `login.templ` — copy verbatim, adapt import path (`github.com/Gentleman-Programming/engram/internal/cloud/cloudstore`), adapt component signatures to flat-row types. Run `go tool templ generate` — check in `*_templ.go`.
+6. **Templ source ports** (batch 3): `components.templ`, `layout.templ`, `login.templ` — copy verbatim, adapt import path (`github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore`), adapt component signatures to flat-row types. Run `go tool templ generate` — check in `*_templ.go`.
 7. **`helpers.go`** (batch 3): replace with legacy version (change import path, drop `ProjectStat`-specific helpers by remapping to `DashboardProjectRow`).
 8. **Handlers** (batch 3): in `dashboard.go`, replace every `renderLoginPage` / `renderLayout` / `renderHTML` string-concat call with `Layout(title, h.cfg.GetDisplayName(r), activeTab, h.cfg.IsAdmin(r), DashboardHome(...))`-style templ renders. Add new handlers: `handleProjectsList`, `handleProjectObservationsPartial`, `handleProjectSessionsPartial`, `handleProjectPromptsPartial`, `handleAdminUsers`, `handleAdminHealth`, `handleAdminSyncTogglePost`, `handleSessionDetail`, `handleObservationDetail`, `handlePromptDetail`. All structural, HTML, copy, and HTMX tests from batch 1 go GREEN.
 9. **Cloudserver wiring** (batch 3): in `cloudserver.go:routes()`, add `GetDisplayName: func(r *http.Request) string { return "OPERATOR" }` to the `MountConfig` literal. Admin POST route is gated by `IsAdmin` closure that wraps `isDashboardAdmin`.
-10. **Verify** (batch 4): `go test -cover ./...` — expect coverage ≥ 79 %. Manual spot-check with `ENGRAM_CLOUD_INSECURE_NO_AUTH=1 go run ./cmd/engram cloud serve`.
+10. **Verify** (batch 4): `go test -cover ./...` — expect coverage ≥ 79 %. Manual spot-check with `NV_CLOUD_INSECURE_NO_AUTH=1 go run ./cmd/engram cloud serve`.
 
 ### Auth-bridge pattern (detailed)
 
@@ -292,7 +292,7 @@ These fields come from chunk JSON that `buildDashboardReadModel` already decodes
 
 **Decision**: Include `POST /dashboard/admin/projects/{name}/sync` + the sync-form partial. Mutation is gated at handler entry by `if !h.cfg.IsAdmin(r) { 403 }`. `updatedBy` is sourced from `h.displayName(r)`. `reason` comes from the POST form.
 
-**Rationale**: Admin visual parity without a working control violates `engram-business-rules` ("UI controls must map to real, enforceable behavior") and `engram-dashboard-htmx` ("Mutation forms must work as normal HTTP posts too"). `ENGRAM_CLOUD_ADMIN` already drives `isDashboardAdmin` — re-using the `IsAdmin` closure keeps the auth surface uniform. AD-3 provides the backing persistence; without AD-3 this toggle would be cosmetic.
+**Rationale**: Admin visual parity without a working control violates `engram-business-rules` ("UI controls must map to real, enforceable behavior") and `engram-dashboard-htmx` ("Mutation forms must work as normal HTTP posts too"). `NV_CLOUD_ADMIN` already drives `isDashboardAdmin` — re-using the `IsAdmin` closure keeps the auth surface uniform. AD-3 provides the backing persistence; without AD-3 this toggle would be cosmetic.
 
 **Impact**: one new handler (`handleAdminSyncTogglePost` + `handleAdminSyncToggleForm`) in `dashboard.go`; two routes; two tests (`TestAdminSyncTogglePosts` succeeds as admin, `TestAdminSyncToggleRequiresAdmin` gets 403 as non-admin). The POST responds with 303 redirect back to `/dashboard/admin/projects`, plus HTMX-aware `HX-Redirect` header when the request is HTMX-driven (standard dashboard pattern).
 

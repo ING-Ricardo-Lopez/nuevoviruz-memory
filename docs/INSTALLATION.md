@@ -38,7 +38,7 @@ brew update && brew upgrade engram
 If you have Go installed, this is the cleanest and most trustworthy path — the binary is compiled on your machine from source, so no antivirus will flag it:
 
 ```powershell
-go install github.com/Gentleman-Programming/engram/cmd/engram@latest
+go install github.com/ING-Ricardo-Lopez/nuevoviruz-memory/cmd/engram@latest
 # Binary goes to %GOPATH%\bin\engram.exe (typically %USERPROFILE%\go\bin\)
 ```
 
@@ -47,7 +47,7 @@ Ensure `%GOPATH%\bin` (or `%USERPROFILE%\go\bin`) is on your `PATH`.
 **Option B: Build from source**
 
 ```powershell
-git clone https://github.com/Gentleman-Programming/engram.git
+git clone https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory.git
 cd engram
 go install ./cmd/engram
 # Binary goes to %GOPATH%\bin\engram.exe (typically %USERPROFILE%\go\bin\)
@@ -59,7 +59,7 @@ go build -ldflags="-X main.version=local-$v" -o engram.exe ./cmd/engram
 
 **Option C: Download the prebuilt binary**
 
-1. Go to [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases)
+1. Go to [GitHub Releases](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases)
 2. Download `engram_<version>_windows_amd64.zip` (or `arm64` for ARM devices)
 3. Extract `engram.exe` to a folder in your `PATH` (e.g. `C:\Users\<you>\bin\`)
 
@@ -91,8 +91,8 @@ Expand-Archive engram_*_windows_amd64.zip -DestinationPath "$env:USERPROFILE\bin
 > they originate from your own machine.
 
 > **Other Windows notes:**
-> - Data is stored in `%USERPROFILE%\.engram\engram.db`
-> - Override with `ENGRAM_DATA_DIR` environment variable
+> - Data is stored in `%USERPROFILE%\.nuevoviruz\engram.db`
+> - Override with `NV_DATA_DIR` environment variable
 > - All core features work natively: CLI, MCP server, TUI, HTTP API, Git Sync
 > - No WSL required for the core binary — it's a native Windows executable
 
@@ -101,7 +101,7 @@ Expand-Archive engram_*_windows_amd64.zip -DestinationPath "$env:USERPROFILE\bin
 ## Install from source (macOS / Linux)
 
 ```bash
-git clone https://github.com/Gentleman-Programming/engram.git
+git clone https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory.git
 cd engram
 go install ./cmd/engram
 
@@ -113,7 +113,7 @@ go build -ldflags="-X main.version=local-$(git describe --tags --always)" -o eng
 
 ## Download binary (all platforms)
 
-Grab the latest release for your platform from [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases).
+Grab the latest release for your platform from [GitHub Releases](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases).
 
 | Platform | File |
 |----------|------|
@@ -139,8 +139,8 @@ The binary includes SQLite (via [modernc.org/sqlite](https://pkg.go.dev/modernc.
 
 | Variable | Description | Default |
 |---|---|---|
-| `ENGRAM_DATA_DIR` | Data directory | `~/.engram` (Windows: `%USERPROFILE%\.engram`) |
-| `ENGRAM_PORT` | HTTP server port | `7437` |
+| `NV_DATA_DIR` | Data directory | `~/.nuevoviruz` (Windows: `%USERPROFILE%\.nuevoviruz`) |
+| `NV_PORT` | HTTP server port | `7437` |
 
 ---
 
@@ -156,4 +156,4 @@ When using `engram setup`, config files are written to platform-appropriate loca
 | Claude Code | Managed by `claude` CLI | Managed by `claude` CLI |
 | VS Code | `.vscode/mcp.json` (workspace) or `~/Library/Application Support/Code/User/mcp.json` (user) | `.vscode\mcp.json` (workspace) or `%APPDATA%\Code\User\mcp.json` (user) |
 | Antigravity | `~/.gemini/antigravity/mcp_config.json` | `%USERPROFILE%\.gemini\antigravity\mcp_config.json` |
-| Data directory | `~/.engram/` | `%USERPROFILE%\.engram\` |
+| Data directory | `~/.nuevoviruz/` | `%USERPROFILE%\.nuevoviruz\` |

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec"
-	"github.com/Gentleman-Programming/engram/internal/store"
-	engramsync "github.com/Gentleman-Programming/engram/internal/sync"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
+	engramsync "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync"
 )
 
 type RemoteTransport struct {
@@ -408,7 +408,7 @@ func newMutationHTTPStatusError(operation string, statusCode int, body []byte) e
 	errorCode := strings.TrimSpace(payload.ErrorCode)
 	if statusCode == http.StatusNotFound {
 		errorCode = "server_unsupported"
-		log.Printf("[autosync] cloud mutation endpoint returned 404 (server_unsupported); deploy the new server first before enabling ENGRAM_CLOUD_AUTOSYNC=1")
+		log.Printf("[autosync] cloud mutation endpoint returned 404 (server_unsupported); deploy the new server first before enabling NV_CLOUD_AUTOSYNC=1")
 	}
 
 	return &HTTPStatusError{

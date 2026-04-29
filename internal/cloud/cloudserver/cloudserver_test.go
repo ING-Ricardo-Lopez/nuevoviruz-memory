@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	cloudauth "github.com/Gentleman-Programming/engram/internal/cloud/auth"
-	"github.com/Gentleman-Programming/engram/internal/cloud/cloudstore"
-	"github.com/Gentleman-Programming/engram/internal/cloud/dashboard"
-	"github.com/Gentleman-Programming/engram/internal/store"
-	engramsync "github.com/Gentleman-Programming/engram/internal/sync"
+	cloudauth "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/auth"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/dashboard"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
+	engramsync "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync"
 )
 
 type fakeStore struct {

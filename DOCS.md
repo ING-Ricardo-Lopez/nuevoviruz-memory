@@ -198,15 +198,15 @@ Engram is local-first: local SQLite is authoritative; cloud features are optiona
 
 | Variable | Description | Default |
 |---|---|---|
-| `ENGRAM_DATA_DIR` | Override data directory | `~/.engram` |
-| `ENGRAM_PORT` | Override HTTP server port | `7437` |
-| `ENGRAM_PROJECT` | Override project name for MCP server | auto-detected via git |
+| `NV_DATA_DIR` | Override data directory | `~/.nuevoviruz` |
+| `NV_PORT` | Override HTTP server port | `7437` |
+| `NV_PROJECT` | Override project name for MCP server | auto-detected via git |
 
 ### Cloud CLI (opt-in)
 
 - `engram cloud status` — show current cloud config state plus auth/sync readiness without mutating local state
 - `engram cloud enroll <project>` — enroll one project for cloud replication
-- `engram cloud config --server <url>` — persist cloud server URL to `~/.engram/cloud.json`
+- `engram cloud config --server <url>` — persist cloud server URL to `~/.nuevoviruz/cloud.json`
 - `engram cloud serve` — run cloud backend API + dashboard (`/dashboard`) using Postgres config from env
 - `engram cloud upgrade doctor --project <project>` — deterministic read-only readiness diagnosis (`ready|blocked`, class/reason)
 - `engram cloud upgrade repair --project <project> [--dry-run|--apply]` — deterministic local-safe repair planner/apply (no remote mutation)
@@ -214,33 +214,33 @@ Engram is local-first: local SQLite is authoritative; cloud features are optiona
 - `engram cloud upgrade status --project <project>` — show upgrade stage/class/reason
 - `engram cloud upgrade rollback --project <project>` — restore pre-upgrade local snapshot before `bootstrap_verified`; blocked afterwards
 
-Cloud auth token is provided at runtime via `ENGRAM_CLOUD_TOKEN` (not by a dedicated CLI subcommand).
-Cloud server startup fails closed when the token is missing unless `ENGRAM_CLOUD_INSECURE_NO_AUTH=1` is explicitly set for local insecure development.
-`ENGRAM_CLOUD_INSECURE_NO_AUTH=1` cannot be combined with `ENGRAM_CLOUD_TOKEN`.
-Cloud server always requires `ENGRAM_CLOUD_ALLOWED_PROJECTS` (comma-separated), including insecure mode, so project scope remains server-enforced.
-`ENGRAM_CLOUD_TOKEN` + `ENGRAM_CLOUD_ALLOWED_PROJECTS` are server-side requirements for authenticated mode and must be configured before `engram cloud serve` (or compose startup).
-Authenticated mode also requires an explicit non-default `ENGRAM_JWT_SECRET`; implicit development defaults are rejected.
-Dashboard requests support browser login in authenticated mode: use `/dashboard/login` to exchange the bearer token for an HttpOnly dashboard cookie scoped to `/dashboard`. Protected `/dashboard/*` HTML routes require that cookie and do **not** treat raw `Authorization: Bearer ...` headers as an authenticated browser session. Sync API routes (`/sync/pull`, `/sync/push`) remain header-auth only. In insecure mode (`ENGRAM_CLOUD_INSECURE_NO_AUTH=1` + no `ENGRAM_CLOUD_TOKEN`), dashboard auth is bypassed and `/dashboard/login` redirects to `/dashboard/`.
+Cloud auth token is provided at runtime via `NV_CLOUD_TOKEN` (not by a dedicated CLI subcommand).
+Cloud server startup fails closed when the token is missing unless `NV_CLOUD_INSECURE_NO_AUTH=1` is explicitly set for local insecure development.
+`NV_CLOUD_INSECURE_NO_AUTH=1` cannot be combined with `NV_CLOUD_TOKEN`.
+Cloud server always requires `NV_CLOUD_ALLOWED_PROJECTS` (comma-separated), including insecure mode, so project scope remains server-enforced.
+`NV_CLOUD_TOKEN` + `NV_CLOUD_ALLOWED_PROJECTS` are server-side requirements for authenticated mode and must be configured before `engram cloud serve` (or compose startup).
+Authenticated mode also requires an explicit non-default `NV_JWT_SECRET`; implicit development defaults are rejected.
+Dashboard requests support browser login in authenticated mode: use `/dashboard/login` to exchange the bearer token for an HttpOnly dashboard cookie scoped to `/dashboard`. Protected `/dashboard/*` HTML routes require that cookie and do **not** treat raw `Authorization: Bearer ...` headers as an authenticated browser session. Sync API routes (`/sync/pull`, `/sync/push`) remain header-auth only. In insecure mode (`NV_CLOUD_INSECURE_NO_AUTH=1` + no `NV_CLOUD_TOKEN`), dashboard auth is bypassed and `/dashboard/login` redirects to `/dashboard/`.
 
-`ENGRAM_CLOUD_ADMIN` is optional in authenticated mode; when set, `/dashboard/admin` is allowed only for sessions established with that exact token.
-`ENGRAM_CLOUD_ADMIN` is rejected in insecure mode (`ENGRAM_CLOUD_INSECURE_NO_AUTH=1`) to avoid an incoherent admin/browser auth path.
+`NV_CLOUD_ADMIN` is optional in authenticated mode; when set, `/dashboard/admin` is allowed only for sessions established with that exact token.
+`NV_CLOUD_ADMIN` is rejected in insecure mode (`NV_CLOUD_INSECURE_NO_AUTH=1`) to avoid an incoherent admin/browser auth path.
 
-Cloud runtime bind host is controlled by `ENGRAM_CLOUD_HOST`:
+Cloud runtime bind host is controlled by `NV_CLOUD_HOST`:
 - default: `127.0.0.1` (local-only, safer default)
-- container/compose: set `ENGRAM_CLOUD_HOST=0.0.0.0` so published host ports can reach the cloud server
+- container/compose: set `NV_CLOUD_HOST=0.0.0.0` so published host ports can reach the cloud server
 
 Cloud runtime envs for `engram cloud serve`:
 
 | Variable | Required | Notes |
 |---|---|---|
-| `ENGRAM_DATABASE_URL` | yes | Postgres DSN for cloud chunk storage/dashboard read model |
-| `ENGRAM_PORT` | no | Runtime port (default `8080`) |
-| `ENGRAM_CLOUD_HOST` | no | Bind host (default `127.0.0.1`; use `0.0.0.0` for containers) |
-| `ENGRAM_CLOUD_ALLOWED_PROJECTS` | yes | Comma-separated allowlist; always required (authenticated + insecure modes) |
-| `ENGRAM_CLOUD_TOKEN` | yes (authenticated mode) | Enables bearer auth mode |
-| `ENGRAM_JWT_SECRET` | yes (authenticated mode) | Must be explicitly set and non-default when token mode is enabled |
-| `ENGRAM_CLOUD_INSECURE_NO_AUTH` | no | Set to `1` only for local insecure mode; cannot be combined with `ENGRAM_CLOUD_TOKEN` |
-| `ENGRAM_CLOUD_ADMIN` | no | Optional admin dashboard token in authenticated mode; rejected in insecure mode |
+| `NV_DATABASE_URL` | yes | Postgres DSN for cloud chunk storage/dashboard read model |
+| `NV_PORT` | no | Runtime port (default `8080`) |
+| `NV_CLOUD_HOST` | no | Bind host (default `127.0.0.1`; use `0.0.0.0` for containers) |
+| `NV_CLOUD_ALLOWED_PROJECTS` | yes | Comma-separated allowlist; always required (authenticated + insecure modes) |
+| `NV_CLOUD_TOKEN` | yes (authenticated mode) | Enables bearer auth mode |
+| `NV_JWT_SECRET` | yes (authenticated mode) | Must be explicitly set and non-default when token mode is enabled |
+| `NV_CLOUD_INSECURE_NO_AUTH` | no | Set to `1` only for local insecure mode; cannot be combined with `NV_CLOUD_TOKEN` |
+| `NV_CLOUD_ADMIN` | no | Optional admin dashboard token in authenticated mode; rejected in insecure mode |
 
 Cloud sync is still local-first and explicit:
 
@@ -249,7 +249,7 @@ Cloud sync is still local-first and explicit:
 engram sync --cloud --project my-project
 
 # Optional env toggle for cloud mode in sync command
-ENGRAM_CLOUD_SYNC=1 engram sync --status --project my-project
+NV_CLOUD_SYNC=1 engram sync --status --project my-project
 ```
 
 When `engram sync --cloud --project <project>` or autosync hits a known repairable cloud sync/upsert/canonicalization failure, Engram preserves the original error and appends guidance to run:
@@ -268,15 +268,15 @@ Sync/autosync never auto-applies repairs; only the explicit `repair --apply` com
 ```bash
 # 1) SERVER-SIDE startup requirements (configure before startup)
 # docker-compose.cloud.yml includes defaults for browser-demo smoke usage:
-# ENGRAM_CLOUD_INSECURE_NO_AUTH=1
-# ENGRAM_CLOUD_ALLOWED_PROJECTS=smoke-project
+# NV_CLOUD_INSECURE_NO_AUTH=1
+# NV_CLOUD_ALLOWED_PROJECTS=smoke-project
 docker compose -f docker-compose.cloud.yml up -d
 
 # source-run flow (without compose): set BOTH token + allowlist before startup
-# ENGRAM_DATABASE_URL="postgres://engram:engram_dev@127.0.0.1:5433/engram_cloud?sslmode=disable" \
-# ENGRAM_JWT_SECRET="replace-with-32+-byte-random-secret" \
-# ENGRAM_CLOUD_TOKEN="your-token" \
-# ENGRAM_CLOUD_ALLOWED_PROJECTS="my-project" \
+# NV_DATABASE_URL="postgres://engram:engram_dev@127.0.0.1:5433/engram_cloud?sslmode=disable" \
+# NV_JWT_SECRET="replace-with-32+-byte-random-secret" \
+# NV_CLOUD_TOKEN="your-token" \
+# NV_CLOUD_ALLOWED_PROJECTS="my-project" \
 # engram cloud serve
 
 # 2) CLIENT-SIDE CLI setup
@@ -284,8 +284,8 @@ docker compose -f docker-compose.cloud.yml up -d
 engram cloud config --server http://127.0.0.1:18080
 # compose runtime default is insecure local-dev mode; keep token unset
 # client sync preflight only requires the configured cloud server URL; no
-# client-side ENGRAM_CLOUD_INSECURE_NO_AUTH flag is required for compose flow
-unset ENGRAM_CLOUD_TOKEN
+# client-side NV_CLOUD_INSECURE_NO_AUTH flag is required for compose flow
+unset NV_CLOUD_TOKEN
 
 # 3) Enroll project + run explicit cloud sync
 engram cloud enroll smoke-project
@@ -606,7 +606,7 @@ All project names are normalized on write and read: **lowercase**, **trimmed**, 
 
 The MCP server auto-detects the project name at startup using a priority chain:
 1. `--project` flag
-2. `ENGRAM_PROJECT` environment variable
+2. `NV_PROJECT` environment variable
 3. Git remote origin URL (extracts repo name)
 4. Git repository root directory name
 5. Current working directory basename
@@ -661,7 +661,7 @@ Share memories across machines, backup, or migrate:
 
 Share memories through git repositories using compressed chunks with a manifest index.
 
-- `engram sync` — Exports new memories as a gzipped JSONL chunk to `.engram/chunks/`
+- `engram sync` — Exports new memories as a gzipped JSONL chunk to `.nuevoviruz/chunks/`
 - `engram sync --all` — Exports ALL memories from every project
 - `engram sync --import` — Imports chunks listed in the manifest that haven't been imported yet
 - `engram sync --status` — Shows how many chunks exist locally vs remotely (filesystem mode)
@@ -669,7 +669,7 @@ Share memories through git repositories using compressed chunks with a manifest 
 - `engram sync --project NAME` — Filters export to a specific project
 
 ```
-.engram/
+.nuevoviruz/
 ├── manifest.json          <- index of all chunks (small, git-mergeable)
 ├── chunks/
 │   ├── a3f8c1d2.jsonl.gz <- chunk 1 (gzipped JSONL)
@@ -740,7 +740,7 @@ Interactive Bubbletea-based terminal UI. Launch with `engram tui`.
 ### Using systemd
 
 1. Move binary to `~/.local/bin` (ensure it's in your `$PATH`)
-2. Create directories: `mkdir -p ~/.engram ~/.config/systemd/user`
+2. Create directories: `mkdir -p ~/.nuevoviruz ~/.config/systemd/user`
 3. Create `~/.config/systemd/user/engram.service` (see below)
 4. `systemctl --user daemon-reload`
 5. `systemctl --user enable engram`
@@ -757,7 +757,7 @@ WorkingDirectory=%h
 ExecStart=%h/.local/bin/engram serve
 Restart=always
 RestartSec=3
-Environment=ENGRAM_DATA_DIR=%h/.engram
+Environment=NV_DATA_DIR=%h/.nuevoviruz
 
 [Install]
 WantedBy=default.target
@@ -833,20 +833,20 @@ Autosync is **opt-in**. Set all three environment variables before starting `eng
 
 | Variable | Required | Description |
 |---|---|---|
-| `ENGRAM_CLOUD_AUTOSYNC` | Yes (exact `"1"`) | Enables autosync. Any other value disables it. |
-| `ENGRAM_CLOUD_TOKEN` | Yes | Bearer token for the cloud server. |
-| `ENGRAM_CLOUD_SERVER` | Yes | Base URL of the cloud server (e.g. `https://cloud.engram.example.com`). |
+| `NV_CLOUD_AUTOSYNC` | Yes (exact `"1"`) | Enables autosync. Any other value disables it. |
+| `NV_CLOUD_TOKEN` | Yes | Bearer token for the cloud server. |
+| `NV_CLOUD_SERVER` | Yes | Base URL of the cloud server (e.g. `https://cloud.nuevoviruz.example.com`). |
 
 Example:
 
 ```sh
-ENGRAM_CLOUD_AUTOSYNC=1 \
-ENGRAM_CLOUD_TOKEN=your-token \
-ENGRAM_CLOUD_SERVER=https://cloud.engram.example.com \
+NV_CLOUD_AUTOSYNC=1 \
+NV_CLOUD_TOKEN=your-token \
+NV_CLOUD_SERVER=https://cloud.nuevoviruz.example.com \
 engram serve
 ```
 
-Missing `ENGRAM_CLOUD_TOKEN` or `ENGRAM_CLOUD_SERVER` logs an `ERROR` and disables autosync gracefully — the server still starts.
+Missing `NV_CLOUD_TOKEN` or `NV_CLOUD_SERVER` logs an `ERROR` and disables autosync gracefully — the server still starts.
 
 ### Autosync Phase Table
 
@@ -868,8 +868,8 @@ Missing `ENGRAM_CLOUD_TOKEN` or `ENGRAM_CLOUD_SERVER` logs an `ERROR` and disabl
 | `reason_code` | Cause | Resolution |
 |---|---|---|
 | `transport_failed` | Network error, server 5xx, or 404 on mutation endpoints | Check server health and network; if 404, see `server_unsupported` note below |
-| `auth_required` | Bearer token rejected (401) | Rotate `ENGRAM_CLOUD_TOKEN` |
-| `policy_forbidden` | Project access denied (403) | Check `ENGRAM_CLOUD_ALLOWED_PROJECTS` on the server |
+| `auth_required` | Bearer token rejected (401) | Rotate `NV_CLOUD_TOKEN` |
+| `policy_forbidden` | Project access denied (403) | Check `NV_CLOUD_ALLOWED_PROJECTS` on the server |
 | `internal_error` | Panic inside the sync cycle | Check logs for stack trace |
 | `upgrade_paused` | Autosync paused during cloud upgrade (`PhaseDisabled`) | Call `ResumeAfterUpgrade` or restart |
 
@@ -879,9 +879,9 @@ Note: when the cloud server returns 404 on mutation endpoints, the transport log
 
 For a step-by-step recovery guide covering `chunk_id does not match payload content hash`, `session payload directory is required`, and the temporary missing-directory repair helper, see [Engram Cloud Troubleshooting](docs/engram-cloud/troubleshooting.md).
 
-**`transport_failed` with `server_unsupported` in logs**: The cloud server does not yet implement `POST /sync/mutations/push` or `GET /sync/mutations/pull`. Deploy a server version that includes these endpoints before enabling `ENGRAM_CLOUD_AUTOSYNC=1`. Check logs for the line containing `server_unsupported`.
+**`transport_failed` with `server_unsupported` in logs**: The cloud server does not yet implement `POST /sync/mutations/push` or `GET /sync/mutations/pull`. Deploy a server version that includes these endpoints before enabling `NV_CLOUD_AUTOSYNC=1`. Check logs for the line containing `server_unsupported`.
 
-**Autosync not starting**: Check that `ENGRAM_CLOUD_AUTOSYNC` is exactly `"1"` (not `"true"` or `"yes"`), and that both `ENGRAM_CLOUD_TOKEN` and `ENGRAM_CLOUD_SERVER` are non-empty. The process logs an `[autosync] ERROR` line explaining which variable is missing.
+**Autosync not starting**: Check that `NV_CLOUD_AUTOSYNC` is exactly `"1"` (not `"true"` or `"yes"`), and that both `NV_CLOUD_TOKEN` and `NV_CLOUD_SERVER` are non-empty. The process logs an `[autosync] ERROR` line explaining which variable is missing.
 
 **Local writes still blocked**: Autosync runs in its own goroutine and never holds locks shared with the local write path. If local writes appear blocked, investigate the SQLite store layer, not the autosync manager.
 

@@ -39,7 +39,7 @@ Users have no way to visualize how their AI agent's memories connect. Engram sto
 - Writes markdown files: frontmatter (type, project, scope, topic_key, session_id, created_at) + content body + wikilinks section
 - Wikilinks derived from: shared topic_key prefix → `[[topic-hub]]`, session_id → `[[session-hub]]`, project → folder
 - Hub notes: `_sessions/{session-id}.md` lists all observations in that session; `_topics/{topic-prefix}.md` lists all observations sharing a topic_key prefix
-- Incremental: store last-export timestamp in `{vault}/engram/.engram-sync-state.json`
+- Incremental: store last-export timestamp in `{vault}/engram/.nuevoviruz-sync-state.json`
 - No new Go dependencies — markdown is string formatting, YAML frontmatter is `fmt.Sprintf`
 
 **Phase 2 — Obsidian plugin (~5-7 days)**:

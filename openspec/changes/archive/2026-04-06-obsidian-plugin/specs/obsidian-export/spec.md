@@ -48,7 +48,7 @@ The exporter MUST create the following directory hierarchy inside `{vault}/engra
 ├── {project}/{type}/{slug}-{id}.md   ← observation notes
 ├── _sessions/{session-id}.md          ← session hub notes
 ├── _topics/{topic-prefix}.md          ← topic cluster hub notes
-└── .engram-sync-state.json            ← incremental sync state
+└── .nuevoviruz-sync-state.json            ← incremental sync state
 ```
 
 All directories MUST be created if they do not exist. The exporter MUST NOT write outside the `{vault}/engram/` subdirectory.
@@ -142,26 +142,26 @@ Observations with an empty or absent topic_key MUST be excluded from prefix grou
 
 ### Requirement: REQ-EXPORT-06 — Incremental Sync
 
-The exporter MUST persist the last-export timestamp in `{vault}/engram/.engram-sync-state.json`. On subsequent runs, it MUST only write observations created or updated after that timestamp.
+The exporter MUST persist the last-export timestamp in `{vault}/engram/.nuevoviruz-sync-state.json`. On subsequent runs, it MUST only write observations created or updated after that timestamp.
 
 #### Scenario: First export — no state file
 
-- GIVEN `.engram-sync-state.json` does not exist
+- GIVEN `.nuevoviruz-sync-state.json` does not exist
 - WHEN export runs
 - THEN all matching observations are exported
-- AND `.engram-sync-state.json` is created with `last_export_at` set to the current time
+- AND `.nuevoviruz-sync-state.json` is created with `last_export_at` set to the current time
 
 #### Scenario: Incremental export — state file exists
 
-- GIVEN `.engram-sync-state.json` has `last_export_at: "2026-03-01T00:00:00Z"`
+- GIVEN `.nuevoviruz-sync-state.json` has `last_export_at: "2026-03-01T00:00:00Z"`
 - AND a new observation was created at "2026-04-01T00:00:00Z"
 - WHEN export runs without `--since`
 - THEN only the new observation is written
-- AND `.engram-sync-state.json` is updated to the new timestamp
+- AND `.nuevoviruz-sync-state.json` is updated to the new timestamp
 
 #### Scenario: --since flag overrides state file
 
-- GIVEN `.engram-sync-state.json` has `last_export_at: "2026-03-01T00:00:00Z"`
+- GIVEN `.nuevoviruz-sync-state.json` has `last_export_at: "2026-03-01T00:00:00Z"`
 - AND the user passes `--since 2026-01-01`
 - WHEN export runs
 - THEN observations since 2026-01-01 are exported (overriding the state file timestamp)

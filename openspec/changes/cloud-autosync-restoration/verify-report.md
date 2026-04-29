@@ -30,10 +30,10 @@ All 19 tasks across 5 batches are marked `[x]` complete in both `tasks.md` and `
 **Tests (no cache)**: PASS — all 19 packages green.
 
 ```
-ok  github.com/Gentleman-Programming/engram/cmd/engram           2.132s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/autosync   0.646s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/cloudserver  0.059s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/remote  0.037s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/cmd/engram           2.132s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/autosync   0.646s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudserver  0.059s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/remote  0.037s
 [all 18 other packages: ok]
 ```
 
@@ -156,7 +156,7 @@ RED-before-GREEN order is documented consistently in apply-progress.md for all b
 | Nil manager falls back | `TestSyncStatusAdapterNilFallback` | COMPLIANT |
 | Disabled maps upgrade_paused | `TestSyncStatusAdapterDisabled` | COMPLIANT |
 
-### REQ-210: Explicit opt-in via ENGRAM_CLOUD_AUTOSYNC env var
+### REQ-210: Explicit opt-in via NV_CLOUD_AUTOSYNC env var
 
 | Scenario | Test | Result |
 |----------|------|--------|
@@ -234,7 +234,7 @@ The spec requires a dedicated test that "the log message contains 'server_unsupp
 | REQ-207: Run loop + context cancel + poll ticker | IMPLEMENTED | `manager.go:272-313` |
 | REQ-208: StopForUpgrade/ResumeAfterUpgrade | IMPLEMENTED | `manager.go:227-265` |
 | REQ-209: autosyncStatusAdapter with phase mapping | IMPLEMENTED | `cmd/engram/autosync_status.go:25-55` |
-| REQ-210: ENGRAM_CLOUD_AUTOSYNC=1 opt-in only | IMPLEMENTED | `main.go:643` — exact "1" check |
+| REQ-210: NV_CLOUD_AUTOSYNC=1 opt-in only | IMPLEMENTED | `main.go:643` — exact "1" check |
 | REQ-211: Token/server gating with error log | IMPLEMENTED | `main.go:658-663` |
 | REQ-212: Local-first — autosync in separate goroutine | IMPLEMENTED | `tryStartAutosync` launches `go mgr.Run(ctx)` |
 | REQ-213: Stop() WaitGroup + recover() in safeRun() | IMPLEMENTED | `manager.go:216-226`, `314-331` |

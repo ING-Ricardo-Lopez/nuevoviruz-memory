@@ -57,7 +57,7 @@ Flags:
   -h, --help  Show this help.
 
 Environment:
-  ENGRAM_DB   SQLite DB path. Defaults to ~/.engram/engram.db.
+  NV_DB   SQLite DB path. Defaults to ~/.nuevoviruz/engram.db.
 
 Next flow after a successful apply:
   engram cloud upgrade doctor --project PROJECT
@@ -152,10 +152,10 @@ require_cmd() {
 }
 
 db_path() {
-  if [ "${ENGRAM_DB:-}" ]; then
-    printf '%s\n' "$ENGRAM_DB"
+  if [ "${NV_DB:-}" ]; then
+    printf '%s\n' "$NV_DB"
   else
-    printf '%s\n' "$HOME/.engram/engram.db"
+    printf '%s\n' "$HOME/.nuevoviruz/engram.db"
   fi
 }
 
@@ -293,7 +293,7 @@ fi
 require_cmd sqlite3
 
 DB=$(db_path)
-[ -f "$DB" ] || die "SQLite DB not found: $DB (override with ENGRAM_DB=/path/to/engram.db)"
+[ -f "$DB" ] || die "SQLite DB not found: $DB (override with NV_DB=/path/to/engram.db)"
 
 have_table sync_mutations || die "sync_mutations table not found in DB: $DB"
 

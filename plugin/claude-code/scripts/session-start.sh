@@ -3,11 +3,11 @@
 #
 # 1. Ensures the engram server is running
 # 2. Creates a session in engram
-# 3. Auto-imports git-synced chunks if .engram/manifest.json exists
+# 3. Auto-imports git-synced chunks if .nuevoviruz/manifest.json exists
 # 4. Injects Memory Protocol instructions + memory context
 
-ENGRAM_PORT="${ENGRAM_PORT:-7437}"
-ENGRAM_URL="http://127.0.0.1:${ENGRAM_PORT}"
+NV_PORT="${NV_PORT:-7437}"
+NV_URL="http://127.0.0.1:${NV_PORT}"
 IMPORT_TIMEOUT_SECS=8
 LOCK_TTL_SECS=$((IMPORT_TIMEOUT_SECS + 4))
 LOCK_METADATA_STALE_SECS=$((LOCK_TTL_SECS * 5))
@@ -24,14 +24,14 @@ OLD_PROJECT=$(basename "$CWD")
 PROJECT=$(detect_project "$CWD")
 
 # Ensure engram server is running
-if ! curl -sf "${ENGRAM_URL}/health" --max-time 1 > /dev/null 2>&1; then
+if ! curl -sf "${NV_URL}/health" --max-time 1 > /dev/null 2>&1; then
   engram serve &>/dev/null &
   sleep 0.5
 fi
 
 # Migrate project name if it changed (one-time, idempotent)
 if [ "$OLD_PROJECT" != "$PROJECT" ] && [ -n "$OLD_PROJECT" ] && [ -n "$PROJECT" ]; then
-  curl -sf "${ENGRAM_URL}/projects/migrate" \
+  curl -sf "${NV_URL}/projects/migrate" \
     -X POST \
     -H "Content-Type: application/json" \
     -d "$(jq -n --arg old "$OLD_PROJECT" --arg new "$PROJECT" \
@@ -41,7 +41,7 @@ fi
 
 # Create session
 if [ -n "$SESSION_ID" ] && [ -n "$PROJECT" ]; then
-  curl -sf "${ENGRAM_URL}/sessions" \
+  curl -sf "${NV_URL}/sessions" \
     -X POST \
     -H "Content-Type: application/json" \
     -d "$(jq -n --arg id "$SESSION_ID" --arg project "$PROJECT" --arg dir "$CWD" \
@@ -50,7 +50,7 @@ if [ -n "$SESSION_ID" ] && [ -n "$PROJECT" ]; then
 fi
 
 # Auto-import git-synced chunks
-if [ -f "${CWD}/.engram/manifest.json" ]; then
+if [ -f "${CWD}/.nuevoviruz/manifest.json" ]; then
   (
     cd "$CWD" 2>/dev/null || exit 0
     IMPORT_LOCK="/tmp/engram-sync-import-$(printf '%s' "$CWD" | cksum | cut -d ' ' -f 1).lock"
@@ -135,7 +135,7 @@ fi
 
 # Fetch memory context
 ENCODED_PROJECT=$(printf '%s' "$PROJECT" | jq -sRr @uri)
-CONTEXT=$(curl -sf "${ENGRAM_URL}/context?project=${ENCODED_PROJECT}" --max-time 3 2>/dev/null | jq -r '.context // empty')
+CONTEXT=$(curl -sf "${NV_URL}/context?project=${ENCODED_PROJECT}" --max-time 3 2>/dev/null | jq -r '.context // empty')
 
 # Inject Memory Protocol + context — stdout goes to Claude as additionalContext
 cat <<'PROTOCOL'

@@ -133,7 +133,7 @@ Threshold: ➖ Not configured
 | Decision | Followed? | Notes |
 |----------|-----------|-------|
 | Route ownership via `dashboard.Mount(...)` | ✅ Yes | `cloudserver` remains composition layer with thin adapter role. |
-| Auth/session model (`ENGRAM_CLOUD_TOKEN` + signed dashboard cookie) | ✅ Yes | Legacy username/password model not reintroduced. |
+| Auth/session model (`NV_CLOUD_TOKEN` + signed dashboard cookie) | ✅ Yes | Legacy username/password model not reintroduced. |
 | Cloud data access via additive materialized read-model tables/indexes | ⚠️ Deviated | Read model is currently computed from chunk history at query time (`buildDashboardReadModel`) rather than persisted dashboard tables/indexes. |
 | templ/assets strategy with committed generated `_templ.go` | ⚠️ Deviated | `.templ` sources exist, but dashboard rendering uses string builders and no generated `_templ.go` files are present. |
 

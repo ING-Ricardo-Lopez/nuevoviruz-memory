@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: engram-cloud-postgres
+    container_name: nuevoviruz-cloud-postgres
     environment:
       POSTGRES_USER: engram
       POSTGRES_PASSWORD: engram_dev
@@ -14,26 +14,26 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - engram-cloud-pg:/var/lib/postgresql/data
+      - nuevoviruz-cloud-pg:/var/lib/postgresql/data
 
   cloud:
     build:
       context: .
       dockerfile: docker/cloud/Dockerfile
-    container_name: engram-cloud
+    container_name: nuevoviruz-cloud
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      ENGRAM_DATABASE_URL: postgres://engram:engram_dev@postgres:5432/engram_cloud?sslmode=disable
-      ENGRAM_JWT_SECRET: engram-dev-jwt-secret-for-local-smoke-1234
-      ENGRAM_CLOUD_INSECURE_NO_AUTH: "1"
-      ENGRAM_CLOUD_ALLOWED_PROJECTS: smoke-project
-      ENGRAM_CLOUD_HOST: 0.0.0.0
-      ENGRAM_PORT: "18080"
+      NV_DATABASE_URL: postgres://engram:engram_dev@postgres:5432/engram_cloud?sslmode=disable
+      NV_JWT_SECRET: engram-dev-jwt-secret-for-local-smoke-1234
+      NV_CLOUD_INSECURE_NO_AUTH: "1"
+      NV_CLOUD_ALLOWED_PROJECTS: smoke-project
+      NV_CLOUD_HOST: 0.0.0.0
+      NV_PORT: "18080"
     ports:
       - "127.0.0.1:18080:18080"
     command: ["cloud", "serve"]
 
 volumes:
-  engram-cloud-pg:
+  nuevoviruz-cloud-pg:

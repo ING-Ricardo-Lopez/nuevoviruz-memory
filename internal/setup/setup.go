@@ -1,7 +1,7 @@
 // Package setup handles agent plugin installation.
 //
 //   - OpenCode: copies embedded plugin file to ~/.config/opencode/plugins/
-//     (patching ENGRAM_BIN to bake in the absolute binary path as a final
+//     (patching NV_BIN to bake in the absolute binary path as a final
 //     fallback) and injects MCP registration in opencode.json using the
 //     resolved absolute binary path so child processes never require PATH
 //     resolution in headless/systemd environments.
@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Gentleman-Programming/engram/internal/mcp"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/mcp"
 )
 
 var (
@@ -110,13 +110,13 @@ func claudeCodePermissionTools(agentTools map[string]bool) []string {
 // which uses resolveEngramCommand() at runtime. This constant is kept for tests
 // that verify idempotency against the already-written string when os.Executable
 // returns "engram" (fallback path).
-const codexEngramBlock = "[mcp_servers.engram]\ncommand = \"engram\"\nargs = [\"mcp\", \"--tools=agent\"]"
+const codexEngramBlock = "[mcp_servers.nuevoviruz]\ncommand = \"engram\"\nargs = [\"mcp\", \"--tools=agent\"]"
 
 // codexEngramBlockStr returns the Codex TOML block for the engram MCP server,
 // using the resolved absolute binary path from os.Executable().
 func codexEngramBlockStr() string {
 	cmd := resolveEngramCommand()
-	return "[mcp_servers.engram]\ncommand = " + fmt.Sprintf("%q", cmd) + "\nargs = [\"mcp\", \"--tools=agent\"]"
+	return "[mcp_servers.nuevoviruz]\ncommand = " + fmt.Sprintf("%q", cmd) + "\nargs = [\"mcp\", \"--tools=agent\"]"
 }
 
 const memoryProtocolMarkdown = `## Engram Persistent Memory — Protocol
@@ -271,35 +271,35 @@ func Install(agentName string) (*Result, error) {
 
 // ─── OpenCode ────────────────────────────────────────────────────────────────
 
-// patchEngramBINLine rewrites the ENGRAM_BIN constant declaration in the
+// patchEngramBINLine rewrites the NV_BIN constant declaration in the
 // plugin source so the installed copy contains an absolute fallback path.
 //
 // Original line in source:
 //
-//	const ENGRAM_BIN = process.env.ENGRAM_BIN ?? "engram"
+//	const NV_BIN = process.env.NV_BIN ?? "engram"
 //
 // Patched line in installed copy:
 //
-//	const ENGRAM_BIN = process.env.ENGRAM_BIN ?? Bun.which("engram") ?? "/abs/path/engram"
+//	const NV_BIN = process.env.NV_BIN ?? Bun.which("engram") ?? "/abs/path/engram"
 //
 // Priority (left to right, first truthy wins):
-//  1. ENGRAM_BIN env var — explicit user override, always respected.
+//  1. NV_BIN env var — explicit user override, always respected.
 //  2. Bun.which("engram") — runtime PATH lookup; works in interactive shells.
 //  3. Absolute baked-in path — works in headless/systemd where PATH is stripped.
 //
 // If absBin is already bare "engram" (os.Executable fallback) we don't add it
 // as the third fallback because it would be redundant with Bun.which("engram").
 func patchEngramBINLine(src []byte, absBin string) []byte {
-	const marker = `const ENGRAM_BIN = process.env.ENGRAM_BIN ?? "engram"`
+	const marker = `const NV_BIN = process.env.NV_BIN ?? "engram"`
 
 	var replacement string
 	if absBin == "engram" {
 		// os.Executable failed — add Bun.which but no baked-in absolute path
-		replacement = `const ENGRAM_BIN = process.env.ENGRAM_BIN ?? Bun.which("engram") ?? "engram"`
+		replacement = `const NV_BIN = process.env.NV_BIN ?? Bun.which("engram") ?? "engram"`
 	} else {
 		// Normal case: bake in the absolute path as final fallback
 		replacement = fmt.Sprintf(
-			`const ENGRAM_BIN = process.env.ENGRAM_BIN ?? Bun.which("engram") ?? %q`,
+			`const NV_BIN = process.env.NV_BIN ?? Bun.which("engram") ?? %q`,
 			absBin,
 		)
 	}
@@ -318,10 +318,10 @@ func installOpenCode() (*Result, error) {
 		return nil, fmt.Errorf("read embedded engram.ts: %w", err)
 	}
 
-	// Patch ENGRAM_BIN in the installed copy so the plugin can find the binary
+	// Patch NV_BIN in the installed copy so the plugin can find the binary
 	// in headless/systemd environments where PATH may not include user tool dirs.
 	// The installed file gets a baked-in absolute path while still honoring
-	// process.env.ENGRAM_BIN (explicit user override) and Bun.which("engram")
+	// process.env.NV_BIN (explicit user override) and Bun.which("engram")
 	// (runtime PATH lookup when PATH is available). The source plugin file is
 	// not modified — it keeps the simple env-var form for development flexibility.
 	data = patchEngramBINLine(data, resolveEngramCommand())
@@ -991,7 +991,7 @@ func upsertCodexEngramBlock(content string) string {
 	var kept []string
 	for i := 0; i < len(lines); {
 		trimmed := strings.TrimSpace(lines[i])
-		if trimmed == "[mcp_servers.engram]" {
+		if trimmed == "[mcp_servers.nuevoviruz]" {
 			i++
 			for i < len(lines) {
 				next := strings.TrimSpace(lines[i])

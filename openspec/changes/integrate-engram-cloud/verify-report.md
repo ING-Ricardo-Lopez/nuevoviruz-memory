@@ -68,7 +68,7 @@ Observed host results:
 - `/sync/pull/compose-bind-verify-1` (auth) → **200**
 - `/sync/pull` (no auth) → **401** (`unauthorized: missing authorization header`)
 
-Conclusion: the previous compose caveat is resolved; host → container reachability now works with `ENGRAM_CLOUD_HOST=0.0.0.0` in compose.
+Conclusion: the previous compose caveat is resolved; host → container reachability now works with `NV_CLOUD_HOST=0.0.0.0` in compose.
 
 ---
 

@@ -9,7 +9,7 @@ import (
 func TestSyncStateRoundTrip(t *testing.T) {
 	t.Run("write then read returns identical state", func(t *testing.T) {
 		dir := t.TempDir()
-		path := filepath.Join(dir, ".engram-sync-state.json")
+		path := filepath.Join(dir, ".nuevoviruz-sync-state.json")
 
 		original := SyncState{
 			LastExportAt: "2026-04-06T14:00:00Z",
@@ -58,7 +58,7 @@ func TestSyncStateRoundTrip(t *testing.T) {
 
 	t.Run("missing file returns empty state, no error", func(t *testing.T) {
 		dir := t.TempDir()
-		path := filepath.Join(dir, ".engram-sync-state.json")
+		path := filepath.Join(dir, ".nuevoviruz-sync-state.json")
 
 		// File does not exist — ReadState must return empty state, not error
 		got, err := ReadState(path)
@@ -78,7 +78,7 @@ func TestSyncStateRoundTrip(t *testing.T) {
 
 	t.Run("write creates file with valid JSON", func(t *testing.T) {
 		dir := t.TempDir()
-		path := filepath.Join(dir, ".engram-sync-state.json")
+		path := filepath.Join(dir, ".nuevoviruz-sync-state.json")
 
 		state := SyncState{
 			LastExportAt: "2026-01-01T00:00:00Z",

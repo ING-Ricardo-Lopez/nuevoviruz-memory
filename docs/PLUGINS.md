@@ -20,7 +20,7 @@ For [OpenCode](https://opencode.ai) users, a thin TypeScript plugin adds enhance
 # Install via engram (recommended — works from Homebrew or binary install)
 engram setup opencode
 
-# Or manually: cp plugin/opencode/engram.ts ~/.config/opencode/plugins/
+# Or manually: cp plugin/opencode/nuevoviruz.ts ~/.config/opencode/plugins/
 ```
 
 The plugin auto-starts the HTTP server if it's not already running — no manual `engram serve` needed.
@@ -31,7 +31,7 @@ The plugin auto-starts the HTTP server if it's not already running — no manual
 
 The plugin:
 - **Auto-starts** the engram server if not running
-- **Auto-imports** git-synced memories from `.engram/manifest.json` if present in the project
+- **Auto-imports** git-synced memories from `.nuevoviruz/manifest.json` if present in the project
 - **Creates sessions** on-demand via `ensureSession()` (resilient to restarts/reconnects)
 - **Injects the Memory Protocol** into the agent's system prompt via `chat.system.transform` — strict rules for when to save, when to search, and a mandatory session close protocol. The protocol is concatenated into the existing system message (not pushed as a separate one), ensuring compatibility with models that only accept a single system block (Qwen, Mistral/Ministral via llama.cpp, etc.)
 - **Injects previous session context** into the compaction prompt
@@ -109,7 +109,7 @@ plugin/claude-code/
 **On session start** (`startup`):
 1. Ensures the engram HTTP server is running
 2. Creates a new session via the API
-3. Auto-imports git-synced chunks from `.engram/manifest.json` (if present)
+3. Auto-imports git-synced chunks from `.nuevoviruz/manifest.json` (if present)
 4. Injects previous session context into Claude's initial context
 
 **On compaction** (`compact`):

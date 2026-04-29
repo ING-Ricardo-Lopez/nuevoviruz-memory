@@ -16,7 +16,7 @@ Strict TDD
 - [x] 2.4 dashboard wiring isolated behind `dashboard.MountConfig`
 - [x] 3.1 explicit auth-flow tests for redirects/session states in cloudserver + dashboard packages
 - [x] 3.2 dashboard middleware bridge with signed `engram_dashboard_token`
-- [x] 3.3 admin gating bridged with `ENGRAM_CLOUD_ADMIN`
+- [x] 3.3 admin gating bridged with `NV_CLOUD_ADMIN`
 - [x] 3.4 auth seams consolidated in cloudserver callback wiring
 - [x] 4.1 cloudstore RED tests for read-model parity slices (projects/detail/search/contributors/admin)
 - [x] 4.2 additive read-model query APIs implemented (`ProjectDetail`, query-aware browser/project/contributor methods)

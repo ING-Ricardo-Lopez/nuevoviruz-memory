@@ -362,7 +362,7 @@ func TestDifferentTopicsDoNotReplaceEachOther(t *testing.T) {
 
 func TestNewMigratesLegacyObservationIDSchema(t *testing.T) {
 	dataDir := t.TempDir()
-	dbPath := filepath.Join(dataDir, "engram.db")
+	dbPath := filepath.Join(dataDir, "nuevoviruz.db")
 
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
@@ -457,7 +457,7 @@ func TestNewMigratesLegacyObservationIDSchema(t *testing.T) {
 
 func TestNewMigratesLegacyUserPromptsSyncIDSchema(t *testing.T) {
 	dataDir := t.TempDir()
-	dbPath := filepath.Join(dataDir, "engram.db")
+	dbPath := filepath.Join(dataDir, "nuevoviruz.db")
 
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
@@ -3158,7 +3158,7 @@ func TestNewErrorBranches(t *testing.T) {
 
 	t.Run("fails when db path is a directory", func(t *testing.T) {
 		dataDir := t.TempDir()
-		dbAsDir := filepath.Join(dataDir, "engram.db")
+		dbAsDir := filepath.Join(dataDir, "nuevoviruz.db")
 		if err := os.Mkdir(dbAsDir, 0755); err != nil {
 			t.Fatalf("mkdir db path: %v", err)
 		}
@@ -3174,7 +3174,7 @@ func TestNewErrorBranches(t *testing.T) {
 
 	t.Run("fails when migration encounters conflicting object", func(t *testing.T) {
 		dataDir := t.TempDir()
-		dbPath := filepath.Join(dataDir, "engram.db")
+		dbPath := filepath.Join(dataDir, "nuevoviruz.db")
 
 		db, err := sql.Open("sqlite", dbPath)
 		if err != nil {
@@ -4387,7 +4387,7 @@ func TestEnrollProjectIdempotent(t *testing.T) {
 func TestEnrollAndLookupProjectNormalization(t *testing.T) {
 	s := newTestStore(t)
 
-	if err := s.EnrollProject("  ENGRAM__CORE  "); err != nil {
+	if err := s.EnrollProject("  NV__CORE  "); err != nil {
 		t.Fatalf("enroll normalized project: %v", err)
 	}
 
@@ -4407,7 +4407,7 @@ func TestEnrollAndLookupProjectNormalization(t *testing.T) {
 		t.Fatal("expected normalized enrollment lookup to succeed")
 	}
 
-	if err := s.UnenrollProject("ENGRAM__CORE"); err != nil {
+	if err := s.UnenrollProject("NV__CORE"); err != nil {
 		t.Fatalf("unenroll normalized project: %v", err)
 	}
 	enrolled, err = s.IsProjectEnrolled("engram_core")
@@ -4720,7 +4720,7 @@ func TestEnrollProjectBackfillsPromptDeleteTombstonesWithDerivedProject(t *testi
 
 func TestNewRepairsSoftDeletedObservationDeleteMutationsForEnrolledProjects(t *testing.T) {
 	dataDir := t.TempDir()
-	dbPath := filepath.Join(dataDir, "engram.db")
+	dbPath := filepath.Join(dataDir, "nuevoviruz.db")
 
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
@@ -4833,7 +4833,7 @@ func TestNewRepairsSoftDeletedObservationDeleteMutationsForEnrolledProjects(t *t
 
 func TestNewRepairsAlreadyEnrolledProjectsMissingHistoricalSyncMutations(t *testing.T) {
 	dataDir := t.TempDir()
-	dbPath := filepath.Join(dataDir, "engram.db")
+	dbPath := filepath.Join(dataDir, "nuevoviruz.db")
 
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {

@@ -4,8 +4,8 @@
 # When compaction happens, inject Memory Protocol + context and instruct
 # the agent to persist the compacted summary via mem_session_summary.
 
-ENGRAM_PORT="${ENGRAM_PORT:-7437}"
-ENGRAM_URL="http://127.0.0.1:${ENGRAM_PORT}"
+NV_PORT="${NV_PORT:-7437}"
+NV_URL="http://127.0.0.1:${NV_PORT}"
 
 # Load shared helpers
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -19,7 +19,7 @@ PROJECT=$(detect_project "$CWD")
 
 # Ensure session exists
 if [ -n "$SESSION_ID" ] && [ -n "$PROJECT" ]; then
-  curl -sf "${ENGRAM_URL}/sessions" \
+  curl -sf "${NV_URL}/sessions" \
     -X POST \
     -H "Content-Type: application/json" \
     -d "$(jq -n --arg id "$SESSION_ID" --arg project "$PROJECT" --arg dir "$CWD" \
@@ -29,7 +29,7 @@ fi
 
 # Fetch context from previous sessions
 ENCODED_PROJECT=$(printf '%s' "$PROJECT" | jq -sRr @uri)
-CONTEXT=$(curl -sf "${ENGRAM_URL}/context?project=${ENCODED_PROJECT}" --max-time 3 2>/dev/null | jq -r '.context // empty')
+CONTEXT=$(curl -sf "${NV_URL}/context?project=${ENCODED_PROJECT}" --max-time 3 2>/dev/null | jq -r '.context // empty')
 
 # Inject Memory Protocol + compaction instruction + context
 cat <<'PROTOCOL'

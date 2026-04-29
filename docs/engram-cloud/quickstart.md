@@ -17,8 +17,8 @@ docker compose -f docker-compose.cloud.yml up -d
 ```
 
 `docker-compose.cloud.yml` defaults on this branch:
-- `ENGRAM_CLOUD_INSECURE_NO_AUTH=1`
-- `ENGRAM_CLOUD_ALLOWED_PROJECTS=smoke-project`
+- `NV_CLOUD_INSECURE_NO_AUTH=1`
+- `NV_CLOUD_ALLOWED_PROJECTS=smoke-project`
 - cloud endpoint published at `http://127.0.0.1:18080`
 
 ### 2) Configure CLI cloud endpoint
@@ -75,13 +75,13 @@ Reference compose file:
 - [docker-compose.ghcr.yml](./docker-compose.ghcr.yml)
 
 Required runtime env vars:
-- `ENGRAM_DATABASE_URL`
-- `ENGRAM_CLOUD_TOKEN`
-- `ENGRAM_CLOUD_ADMIN`
-- `ENGRAM_JWT_SECRET`
-- `ENGRAM_CLOUD_ALLOWED_PROJECTS`
-- `ENGRAM_CLOUD_HOST=0.0.0.0`
-- `ENGRAM_PORT=18080`
+- `NV_DATABASE_URL`
+- `NV_CLOUD_TOKEN`
+- `NV_CLOUD_ADMIN`
+- `NV_JWT_SECRET`
+- `NV_CLOUD_ALLOWED_PROJECTS`
+- `NV_CLOUD_HOST=0.0.0.0`
+- `NV_PORT=18080`
 
 Dokploy guidance:
 1. Create a managed Postgres service.
@@ -110,21 +110,21 @@ POSTGRES_USER=engram
 POSTGRES_PASSWORD=replace-with-strong-postgres-password
 POSTGRES_DB=engram_cloud
 
-ENGRAM_DATABASE_URL=postgres://engram:replace-with-strong-postgres-password@postgres:5432/engram_cloud?sslmode=disable
-ENGRAM_CLOUD_TOKEN=replace-with-long-random-bearer-token
-ENGRAM_CLOUD_ADMIN=replace-with-separate-admin-token
-ENGRAM_JWT_SECRET=replace-with-32+-byte-random-secret
-ENGRAM_CLOUD_ALLOWED_PROJECTS=engram,gentle-ai
-ENGRAM_CLOUD_HOST=0.0.0.0
-ENGRAM_PORT=18080
+NV_DATABASE_URL=postgres://engram:replace-with-strong-postgres-password@postgres:5432/engram_cloud?sslmode=disable
+NV_CLOUD_TOKEN=replace-with-long-random-bearer-token
+NV_CLOUD_ADMIN=replace-with-separate-admin-token
+NV_JWT_SECRET=replace-with-32+-byte-random-secret
+NV_CLOUD_ALLOWED_PROJECTS=engram,gentle-ai
+NV_CLOUD_HOST=0.0.0.0
+NV_PORT=18080
 ```
 
 Notes:
 - Keep `.env` on the server only. Do not commit it.
-- `ENGRAM_CLOUD_TOKEN` is the bearer token clients use for authenticated sync.
-- `ENGRAM_CLOUD_ADMIN` is the dashboard admin token. Use a different secret from `ENGRAM_CLOUD_TOKEN`.
-- `ENGRAM_JWT_SECRET` must be an explicit, non-default strong secret in authenticated mode.
-- `ENGRAM_CLOUD_ALLOWED_PROJECTS` is required server-side and should be a comma-separated allowlist.
+- `NV_CLOUD_TOKEN` is the bearer token clients use for authenticated sync.
+- `NV_CLOUD_ADMIN` is the dashboard admin token. Use a different secret from `NV_CLOUD_TOKEN`.
+- `NV_JWT_SECRET` must be an explicit, non-default strong secret in authenticated mode.
+- `NV_CLOUD_ALLOWED_PROJECTS` is required server-side and should be a comma-separated allowlist.
 
 Reference compose:
 
@@ -171,12 +171,12 @@ cloud sync:
 
 ```bash
 engram cloud config --server https://your-host:18080
-export ENGRAM_CLOUD_TOKEN=replace-with-long-random-bearer-token
+export NV_CLOUD_TOKEN=replace-with-long-random-bearer-token
 engram cloud enroll my-project
 engram sync --cloud --project my-project
 ```
 
-> `ENGRAM_CLOUD_INSECURE_NO_AUTH=1` is for local/dev smoke only. Never use it in production.
+> `NV_CLOUD_INSECURE_NO_AUTH=1` is for local/dev smoke only. Never use it in production.
 
 ---
 
@@ -201,10 +201,10 @@ For concrete recovery steps, see [Engram Cloud Troubleshooting](./troubleshootin
 Use this when you are running `engram cloud serve` directly (no insecure compose smoke mode):
 
 ```bash
-ENGRAM_DATABASE_URL="postgres://engram:engram_dev@127.0.0.1:5433/engram_cloud?sslmode=disable" \
-ENGRAM_JWT_SECRET="replace-with-32+-byte-random-secret" \
-ENGRAM_CLOUD_TOKEN="your-token" \
-ENGRAM_CLOUD_ALLOWED_PROJECTS="my-project" \
+NV_DATABASE_URL="postgres://engram:engram_dev@127.0.0.1:5433/engram_cloud?sslmode=disable" \
+NV_JWT_SECRET="replace-with-32+-byte-random-secret" \
+NV_CLOUD_TOKEN="your-token" \
+NV_CLOUD_ALLOWED_PROJECTS="my-project" \
 engram cloud serve
 ```
 
@@ -212,16 +212,16 @@ Then configure client endpoint + token:
 
 ```bash
 engram cloud config --server http://127.0.0.1:8080
-export ENGRAM_CLOUD_TOKEN="your-token"
+export NV_CLOUD_TOKEN="your-token"
 engram cloud enroll my-project
 engram sync --cloud --project my-project
 ```
 
 Rules that matter:
-- `ENGRAM_CLOUD_INSECURE_NO_AUTH=1` cannot be combined with `ENGRAM_CLOUD_TOKEN`
-- `ENGRAM_CLOUD_ALLOWED_PROJECTS` is required server-side in both modes
-- authenticated mode requires explicit non-default `ENGRAM_JWT_SECRET`
-- `ENGRAM_CLOUD_INSECURE_NO_AUTH=1` remains local/dev only (never production)
+- `NV_CLOUD_INSECURE_NO_AUTH=1` cannot be combined with `NV_CLOUD_TOKEN`
+- `NV_CLOUD_ALLOWED_PROJECTS` is required server-side in both modes
+- authenticated mode requires explicit non-default `NV_JWT_SECRET`
+- `NV_CLOUD_INSECURE_NO_AUTH=1` remains local/dev only (never production)
 
 </details>
 

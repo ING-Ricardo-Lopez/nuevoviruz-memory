@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 )
 
 // ExportConfig holds all CLI flags for the obsidian-export command.
@@ -49,14 +49,14 @@ func (e *Exporter) GraphConfig() GraphConfigMode {
 	return e.config.GraphConfig
 }
 
-// engramRoot returns the {vault}/engram/ root path.
-func (e *Exporter) engramRoot() string {
-	return filepath.Join(e.config.VaultPath, "engram")
+// nuevoviruzRoot returns the {vault}/nuevoviruz/ root path.
+func (e *Exporter) nuevoviruzRoot() string {
+	return filepath.Join(e.config.VaultPath, "nuevoviruz")
 }
 
 // stateFilePath returns the path to the sync state JSON file.
 func (e *Exporter) stateFilePath() string {
-	return filepath.Join(e.engramRoot(), ".engram-sync-state.json")
+	return filepath.Join(e.nuevoviruzRoot(), ".nuevoviruz-sync-state.json")
 }
 
 // Export performs a full or incremental export from the store to the vault.
@@ -80,7 +80,7 @@ func (e *Exporter) Export() (*ExportResult, error) {
 	}
 
 	// ── Create vault namespace directory ─────────────────────────────────────
-	engRoot := e.engramRoot()
+	engRoot := e.nuevoviruzRoot()
 	if err := os.MkdirAll(engRoot, 0755); err != nil {
 		return nil, fmt.Errorf("obsidian: create vault dir %q: %w", engRoot, err)
 	}

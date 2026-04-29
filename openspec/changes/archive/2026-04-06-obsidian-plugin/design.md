@@ -62,7 +62,7 @@ Function signature follows `cmdExport`/`cmdSync` pattern: parse flags, open stor
 ```go
 package obsidian
 
-import "github.com/Gentleman-Programming/engram/internal/store"
+import "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 
 // ExportConfig holds all CLI flags for the export command.
 type ExportConfig struct {
@@ -144,7 +144,7 @@ store.Export()
 ```
 {vault}/
   engram/                              ← root namespace (MUST NOT write outside)
-    .engram-sync-state.json            ← hidden state file
+    .nuevoviruz-sync-state.json            ← hidden state file
     engram/                            ← project folder
       architecture/
         exploration-obsidian-plugin-1719.md
@@ -277,7 +277,7 @@ Examples:
 ## 6. Incremental Sync Algorithm
 
 ```
-1. Read SyncState from {vault}/engram/.engram-sync-state.json
+1. Read SyncState from {vault}/engram/.nuevoviruz-sync-state.json
    - If missing or --force: full export (state = empty)
    
 2. Call store.Export() → full ExportData
@@ -336,7 +336,7 @@ export default class EngramBrainPlugin extends Plugin {
     
     async syncNow() {
         // 1. GET {engramUrl}/export
-        // 2. Read .engram-sync-state.json from vault
+        // 2. Read .nuevoviruz-sync-state.json from vault
         // 3. Diff: create/update/delete files
         // 4. Write updated state
         // 5. Show Notice with summary
@@ -347,7 +347,7 @@ export default class EngramBrainPlugin extends Plugin {
 ### HTTP Sync Flow
 
 Same algorithm as Go CLI but in TypeScript:
-- `fetch(settings.engramUrl + '/export')` → JSON
+- `fetch(settings.nuevoviruzUrl + '/export')` → JSON
 - Same diff logic against state file
 - Uses Obsidian's `vault.create()` / `vault.modify()` / `vault.delete()` API
 - Never touches files outside `engram/` folder
@@ -409,7 +409,7 @@ Use `store.New(cfg)` with temp dir (same pattern as `store_test.go`). Populate w
 | File naming | `{slug}-{id}.md` | UUID or hash | Human-readable + collision-safe |
 | Hub threshold | ≥2 observations | Always create | Prevents orphan hub clutter |
 | Topic prefix extraction | Split on last `/` | Full topic_key | Groups SDD phases: `sdd/change/*` |
-| State file location | Inside vault | `~/.engram/` | Portable with vault; Git-trackable |
+| State file location | Inside vault | `~/.nuevoviruz/` | Portable with vault; Git-trackable |
 | Conflict resolution | Engram wins | Merge | One-way mirror = simple, predictable |
 | Deleted obs | Remove file | Mark with frontmatter flag | Clean vault; deleted means deleted |
 | Phase 2 transport | HTTP API (`/export`) | SQLite direct | Clean separation; no WAL lock conflicts |

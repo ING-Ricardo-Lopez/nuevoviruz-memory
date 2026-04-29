@@ -75,7 +75,7 @@ The system MUST restore contributors and admin surfaces with access controls ali
 
 ### Requirement: Login and dashboard session flow adaptation
 
-The system MUST preserve a styled `/dashboard/login` flow and adapt auth to integrated runtime boundaries (`ENGRAM_CLOUD_TOKEN`, signed dashboard cookie, `ENGRAM_JWT_SECRET` validation).
+The system MUST preserve a styled `/dashboard/login` flow and adapt auth to integrated runtime boundaries (`NV_CLOUD_TOKEN`, signed dashboard cookie, `NV_JWT_SECRET` validation).
 
 #### Scenario: Login POST fallback creates session
 - GIVEN valid runtime auth configuration
@@ -84,7 +84,7 @@ The system MUST preserve a styled `/dashboard/login` flow and adapt auth to inte
 - AND protected dashboard routes become accessible
 
 #### Scenario: Invalid runtime secret configuration
-- GIVEN `ENGRAM_JWT_SECRET` is missing or invalid
+- GIVEN `NV_JWT_SECRET` is missing or invalid
 - WHEN dashboard auth/session validation occurs
 - THEN login/session establishment fails safely
 

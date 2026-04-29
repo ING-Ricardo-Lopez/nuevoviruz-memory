@@ -32,7 +32,7 @@ No schema changes. No new store methods. The store already exposes everything ne
 | PushMutations | POST | `/sync/mutations/push` | `{"mutations":[{entity,entity_key,op,payload}]}` | 200 `{accepted,last_seq}` | 401→`HTTPStatusError.IsAuthFailure`, 403→`IsPolicyFailure`, 404→`server_unsupported` via ErrorCode, 409→surface verbatim, 5xx→retry (3x, 500ms/1s/2s + ±25% jitter), 429→retry after `Retry-After` |
 | PullMutations | GET | `/sync/mutations/pull?since_seq=N&limit=M` | query only | 200 `{mutations:[],has_more}` | same as push |
 
-Timeouts: 30s per request (matches existing `RemoteTransport`). No refresh-token path — ENGRAM_CLOUD_TOKEN is static.
+Timeouts: 30s per request (matches existing `RemoteTransport`). No refresh-token path — NV_CLOUD_TOKEN is static.
 
 **Alternatives**: (a) monolithic `RemoteTransport` with project optional — pollutes chunk-sync invariants; (b) new transport package — over-engineered for < 100 LOC.
 
@@ -70,7 +70,7 @@ When `mgr != nil`: returns `mapPhaseToServerStatus(mgr.Status(), project)` and O
 
 **Choice**: Add `tryStartAutosync(s *store.Store, cfg store.Config) (cloudAutosyncManager, context.CancelFunc)` in `cmd/engram/main.go` right above `cmdServe`. Body:
 
-1. If `!envBool("ENGRAM_CLOUD_AUTOSYNC")` → return nil, nil.
+1. If `!envBool("NV_CLOUD_AUTOSYNC")` → return nil, nil.
 2. `cc, err := resolveCloudRuntimeConfig(cfg)`. If cc.ServerURL or cc.Token empty → log warning, return nil, nil.
 3. `rt, err := remote.NewMutationTransport(cc.ServerURL, cc.Token)`. On error → log, return nil, nil.
 4. `mgr := newCloudAutosyncManager(s, rt)` (existing seam, drops the `nil` arg; adapter is updated to pass rt through).
@@ -86,9 +86,9 @@ When `mgr != nil`: returns `mapPhaseToServerStatus(mgr.Status(), project)` and O
 
 **Choice**: Precedence (checked in `tryStartAutosync` in order, fail-fast with log at each gate):
 
-1. `ENGRAM_CLOUD_AUTOSYNC` — must be truthy (`1|true|yes|on`), else return nil silently.
-2. `ENGRAM_CLOUD_SERVER` — from env OR `cloud.json` (via `resolveCloudRuntimeConfig`). Empty → log `autosync: cloud server not configured`, return nil.
-3. `ENGRAM_CLOUD_TOKEN` — env only (the config ignores persisted tokens per existing `resolveCloudRuntimeConfig` at line 370). Empty → log `autosync: cloud token missing`, return nil.
+1. `NV_CLOUD_AUTOSYNC` — must be truthy (`1|true|yes|on`), else return nil silently.
+2. `NV_CLOUD_SERVER` — from env OR `cloud.json` (via `resolveCloudRuntimeConfig`). Empty → log `autosync: cloud server not configured`, return nil.
+3. `NV_CLOUD_TOKEN` — env only (the config ignores persisted tokens per existing `resolveCloudRuntimeConfig` at line 370). Empty → log `autosync: cloud token missing`, return nil.
 4. `validateCloudServerURL(cc.ServerURL)` — invalid URL → log, return nil.
 
 Never fatal — autosync is opt-in, startup must never block local serve.
@@ -125,7 +125,7 @@ Integration round-trip (Batch 5): new `cmd/engram/autosync_e2e_test.go` spins up
 | File | Section | Change |
 |---|---|---|
 | `DOCS.md` | new `## Cloud Autosync` | How to enable (env vars), what it does, `reason_code` table, troubleshooting (`server_unsupported`) |
-| `README.md` | Cloud section | One-line: "Set `ENGRAM_CLOUD_AUTOSYNC=1` to enable background sync" |
+| `README.md` | Cloud section | One-line: "Set `NV_CLOUD_AUTOSYNC=1` to enable background sync" |
 | `docs/AGENT-SETUP.md` | Cloud sync subsection | Add autosync toggle; note server must deploy endpoints first |
 | `docs/ARCHITECTURE.md` | Cloud subsystem | Add autosync box to the diagram; callout about lease coordination |
 

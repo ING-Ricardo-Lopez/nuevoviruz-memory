@@ -10,8 +10,8 @@
 #
 # MUST exit 0 always and output valid JSON — otherwise Claude Code blocks the message.
 
-ENGRAM_PORT="${ENGRAM_PORT:-7437}"
-ENGRAM_URL="http://127.0.0.1:${ENGRAM_PORT}"
+NV_PORT="${NV_PORT:-7437}"
+NV_URL="http://127.0.0.1:${NV_PORT}"
 
 # Load shared helpers
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -108,7 +108,7 @@ fi
 # Get session start time to check if session is > 5 minutes old
 SESSION_START=""
 if [ -n "$SESSION_ID" ]; then
-  SESSION_START=$(curl -sf "${ENGRAM_URL}/sessions/${SESSION_ID}" --max-time 0.2 2>/dev/null \
+  SESSION_START=$(curl -sf "${NV_URL}/sessions/${SESSION_ID}" --max-time 0.2 2>/dev/null \
     | jq -r '.started_at // empty' 2>/dev/null)
 fi
 
@@ -132,7 +132,7 @@ fi
 # Fetch the most recent observation for this project (any type)
 ENCODED_PROJECT=$(printf '%s' "$PROJECT" | jq -sRr @uri)
 LAST_SAVE_JSON=$(curl -sf \
-  "${ENGRAM_URL}/observations?project=${ENCODED_PROJECT}&limit=1&sort=created_at:desc" \
+  "${NV_URL}/observations?project=${ENCODED_PROJECT}&limit=1&sort=created_at:desc" \
   --max-time 0.2 2>/dev/null)
 
 if [ -z "$LAST_SAVE_JSON" ]; then

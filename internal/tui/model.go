@@ -10,9 +10,9 @@
 package tui
 
 import (
-	"github.com/Gentleman-Programming/engram/internal/setup"
-	"github.com/Gentleman-Programming/engram/internal/store"
-	"github.com/Gentleman-Programming/engram/internal/version"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/setup"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/version"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"

@@ -1,9 +1,9 @@
 # 🧠 Obsidian Brain — Beta
 
-> **Status**: Beta — feedback welcome on the [GitHub issues](https://github.com/Gentleman-Programming/engram/issues) tagged `beta:obsidian`.
+> **Status**: Beta — feedback welcome on the [GitHub issues](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/issues) tagged `beta:obsidian`.
 > **Available since**: `v1.12.0-beta.1`
 > **Stability**: Behavior is locked but flag names may evolve before stable release.
-> **Side-by-side**: This beta installs as `engram-beta` so it doesn't replace your stable `engram`. Both binaries share the same `~/.engram/engram.db`, so memories captured by your stable agent show up in the beta exports automatically.
+> **Side-by-side**: This beta installs as `engram-beta` so it doesn't replace your stable `engram`. Both binaries share the same `~/.nuevoviruz/engram.db`, so memories captured by your stable agent show up in the beta exports automatically.
 
 Visualize your AI agent's memory as an interactive knowledge graph in [Obsidian](https://obsidian.md/). Every observation becomes a Markdown note. Sessions, projects, and topic clusters become connected hubs. Open Obsidian's Graph View and **see how your agent's brain actually thinks**.
 
@@ -27,14 +27,14 @@ The result: your agent's knowledge becomes a **navigable cognitive map** instead
 
 ## Install Side-by-Side (`engram-beta`)
 
-The beta ships as a separate binary named `engram-beta` so it never touches your stable `engram` install. Both binaries read and write the same `~/.engram/engram.db`, so anything captured by your stable agent is immediately visible to the beta.
+The beta ships as a separate binary named `engram-beta` so it never touches your stable `engram` install. Both binaries read and write the same `~/.nuevoviruz/engram.db`, so anything captured by your stable agent is immediately visible to the beta.
 
-Pick the right archive for your platform from the [release page](https://github.com/Gentleman-Programming/engram/releases/tag/v1.12.0-beta.1), then extract and rename:
+Pick the right archive for your platform from the [release page](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases/tag/v1.12.0-beta.1), then extract and rename:
 
 ### macOS (Apple Silicon)
 
 ```bash
-curl -L https://github.com/Gentleman-Programming/engram/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_darwin_arm64.tar.gz -o /tmp/engram-beta.tar.gz
+curl -L https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_darwin_arm64.tar.gz -o /tmp/engram-beta.tar.gz
 tar -xzf /tmp/engram-beta.tar.gz -C /tmp
 sudo mv /tmp/engram /usr/local/bin/engram-beta
 sudo chmod +x /usr/local/bin/engram-beta
@@ -44,7 +44,7 @@ engram-beta version
 ### macOS (Intel)
 
 ```bash
-curl -L https://github.com/Gentleman-Programming/engram/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_darwin_amd64.tar.gz -o /tmp/engram-beta.tar.gz
+curl -L https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_darwin_amd64.tar.gz -o /tmp/engram-beta.tar.gz
 tar -xzf /tmp/engram-beta.tar.gz -C /tmp
 sudo mv /tmp/engram /usr/local/bin/engram-beta
 sudo chmod +x /usr/local/bin/engram-beta
@@ -54,7 +54,7 @@ engram-beta version
 ### Linux
 
 ```bash
-curl -L https://github.com/Gentleman-Programming/engram/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_linux_amd64.tar.gz -o /tmp/engram-beta.tar.gz
+curl -L https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/releases/download/v1.12.0-beta.1/engram_1.12.0-beta.1_linux_amd64.tar.gz -o /tmp/engram-beta.tar.gz
 tar -xzf /tmp/engram-beta.tar.gz -C /tmp
 sudo mv /tmp/engram /usr/local/bin/engram-beta
 sudo chmod +x /usr/local/bin/engram-beta
@@ -64,7 +64,7 @@ engram-beta version
 ### From source (`go install`)
 
 ```bash
-go install github.com/Gentleman-Programming/engram/cmd/engram@v1.12.0-beta.1
+go install github.com/ING-Ricardo-Lopez/nuevoviruz-memory/cmd/engram@v1.12.0-beta.1
 mv ~/go/bin/engram ~/go/bin/engram-beta
 engram-beta version
 ```
@@ -84,7 +84,7 @@ engram-beta version # v1.12.0-beta.1
 sudo rm /usr/local/bin/engram-beta
 ```
 
-The stable `engram`, your `~/.engram/engram.db`, and your Obsidian vault are untouched.
+The stable `engram`, your `~/.nuevoviruz/engram.db`, and your Obsidian vault are untouched.
 
 ---
 
@@ -108,7 +108,7 @@ You should now see hundreds (or thousands) of connected nodes, color-coded by ty
 ## How It Works
 
 ```
-SQLite (~/.engram/engram.db)
+SQLite (~/.nuevoviruz/engram.db)
         │
         ▼
  obsidian-export reads via store.Export()
@@ -136,7 +136,7 @@ The exporter only writes inside `{vault}/engram/`. It will never touch other fol
 ├── .obsidian/
 │   └── graph.json                      ← engram-brain visual config
 ├── engram/                              ← namespace (everything lives here)
-│   ├── .engram-sync-state.json          ← incremental sync state
+│   ├── .nuevoviruz-sync-state.json          ← incremental sync state
 │   ├── _sessions/                       ← session hub notes
 │   │   ├── session-abc123.md
 │   │   └── session-def456.md
@@ -280,17 +280,17 @@ To keep the daemon running across reboots, use `nohup`, `launchd` (macOS), `syst
 nohup ~/go/bin/engram-beta obsidian-export \
   --vault ~/Obsidian/engram \
   --watch --interval 10m \
-  > ~/.engram/obsidian-sync.log 2>&1 &
+  > ~/.nuevoviruz/obsidian-sync.log 2>&1 &
 ```
 
-**macOS launchd plist** (`~/Library/LaunchAgents/com.engram-beta.obsidian-sync.plist`):
+**macOS launchd plist** (`~/Library/LaunchAgents/com.nuevoviruz-beta.obsidian-sync.plist`):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.engram-beta.obsidian-sync</string>
+    <string>com.nuevoviruz-beta.obsidian-sync</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/engram-beta</string>
@@ -306,16 +306,16 @@ nohup ~/go/bin/engram-beta obsidian-export \
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/Users/YOU/.engram/obsidian-sync.log</string>
+    <string>/Users/YOU/.nuevoviruz/obsidian-sync.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/YOU/.engram/obsidian-sync.log</string>
+    <string>/Users/YOU/.nuevoviruz/obsidian-sync.log</string>
 </dict>
 </plist>
 ```
 
 Then load it:
 ```bash
-launchctl load ~/Library/LaunchAgents/com.engram-beta.obsidian-sync.plist
+launchctl load ~/Library/LaunchAgents/com.nuevoviruz-beta.obsidian-sync.plist
 ```
 
 ---
@@ -358,7 +358,7 @@ You can absolutely tweak the graph view in Obsidian's UI — Engram's `preserve`
 
 ## TypeScript Plugin (Optional)
 
-For an in-Obsidian experience with a ribbon button, settings tab, and status bar indicator, there's a TypeScript community plugin in [`plugin/obsidian/`](https://github.com/Gentleman-Programming/engram/tree/main/plugin/obsidian).
+For an in-Obsidian experience with a ribbon button, settings tab, and status bar indicator, there's a TypeScript community plugin in [`plugin/obsidian/`](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/tree/main/plugin/obsidian).
 
 It uses Engram's HTTP API (`engram serve`) instead of reading SQLite directly:
 
@@ -431,7 +431,7 @@ In the Filter panel of Graph View:
 - Consider `--project <name>` to scope to one project at a time.
 
 ### "Where is the sync state stored?"
-- `{vault}/engram/.engram-sync-state.json` — JSON file tracking last export timestamp and per-observation file paths. Safe to delete to force a full re-export, or use `--force`.
+- `{vault}/engram/.nuevoviruz-sync-state.json` — JSON file tracking last export timestamp and per-observation file paths. Safe to delete to force a full re-export, or use `--force`.
 
 ---
 
@@ -445,7 +445,7 @@ This is a beta feature. **We want to hear how it works for you, especially**:
 - Did the daemon mode crash, leak memory, or behave unexpectedly?
 - Did the graph config bootstrap clobber something you cared about?
 
-File issues at [github.com/Gentleman-Programming/engram/issues](https://github.com/Gentleman-Programming/engram/issues) with the `beta:obsidian` label.
+File issues at [github.com/ING-Ricardo-Lopez/nuevoviruz-memory/issues](https://github.com/ING-Ricardo-Lopez/nuevoviruz-memory/issues) with the `beta:obsidian` label.
 
 ---
 

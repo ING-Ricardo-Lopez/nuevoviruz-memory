@@ -46,7 +46,7 @@ engram setup opencode
 ```
 
 This does three things:
-1. Copies the plugin to `~/.config/opencode/plugins/engram.ts` (session tracking, Memory Protocol, compaction recovery)
+1. Copies the plugin to `~/.config/opencode/plugins/nuevoviruz.ts` (session tracking, Memory Protocol, compaction recovery)
 2. Adds the `engram` MCP server entry to your `opencode.json` with `--tools=agent` (12 agent-facing tools)
 3. Adds `opencode-subagent-statusline` to your `tui.json` or `tui.jsonc` so OpenCode shows sub-agent activity in the sidebar/home footer
 
@@ -131,7 +131,7 @@ engram setup gemini-cli
 ```
 
 `engram setup gemini-cli` now does three things:
-- Registers `mcpServers.engram` in `~/.gemini/settings.json` (Windows: `%APPDATA%\gemini\settings.json`)
+- Registers `mcpServers.nuevoviruz` in `~/.gemini/settings.json` (Windows: `%APPDATA%\gemini\settings.json`)
 - Writes `~/.gemini/system.md` with the Engram Memory Protocol (includes post-compaction recovery)
 - Ensures `~/.gemini/.env` contains `GEMINI_SYSTEM_MD=1` so Gemini actually loads that system prompt
 
@@ -167,7 +167,7 @@ engram setup codex
 ```
 
 `engram setup codex` now does three things:
-- Registers `[mcp_servers.engram]` in `~/.codex/config.toml` (Windows: `%APPDATA%\codex\config.toml`)
+- Registers `[mcp_servers.nuevoviruz]` in `~/.codex/config.toml` (Windows: `%APPDATA%\codex\config.toml`)
 - Writes `~/.codex/engram-instructions.md` with the Engram Memory Protocol
 - Writes `~/.codex/engram-compact-prompt.md` and points `experimental_compact_prompt_file` to it, so compaction output includes a required memory-save instruction
 
@@ -179,7 +179,7 @@ Manual alternative: add to your `~/.codex/config.toml` (Windows: `%APPDATA%\code
 model_instructions_file = "~/.codex/engram-instructions.md"
 experimental_compact_prompt_file = "~/.codex/engram-compact-prompt.md"
 
-[mcp_servers.engram]
+[mcp_servers.nuevoviruz]
 command = "engram"
 args = ["mcp"]
 ```
@@ -463,9 +463,9 @@ Nothing breaks if `mem_judge` is never called — pending relations accumulate u
 ### Enable autosync
 
 ```sh
-export ENGRAM_CLOUD_AUTOSYNC=1          # exact "1" only
-export ENGRAM_CLOUD_TOKEN=your-token    # bearer token
-export ENGRAM_CLOUD_SERVER=https://cloud.engram.example.com
+export NV_CLOUD_AUTOSYNC=1          # exact "1" only
+export NV_CLOUD_TOKEN=your-token    # bearer token
+export NV_CLOUD_SERVER=https://cloud.nuevoviruz.example.com
 
 engram serve
 # or

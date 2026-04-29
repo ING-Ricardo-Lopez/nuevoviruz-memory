@@ -145,27 +145,27 @@ An `autosyncStatusAdapter` MUST implement `server.SyncStatusProvider` (i.e., `St
 
 ---
 
-### REQ-210: Explicit opt-in via ENGRAM_CLOUD_AUTOSYNC env var
+### REQ-210: Explicit opt-in via NV_CLOUD_AUTOSYNC env var
 
-Autosync MUST only start when `ENGRAM_CLOUD_AUTOSYNC=1` is set in the environment. Setting this env var without a valid token or server URL MUST NOT silently succeed (see REQ-211). Absence of the env var MUST leave autosync disabled with no log output beyond a single debug-level note. The env var MUST NOT auto-enable when only `ENGRAM_CLOUD_TOKEN` and `ENGRAM_CLOUD_SERVER` are set.
+Autosync MUST only start when `NV_CLOUD_AUTOSYNC=1` is set in the environment. Setting this env var without a valid token or server URL MUST NOT silently succeed (see REQ-211). Absence of the env var MUST leave autosync disabled with no log output beyond a single debug-level note. The env var MUST NOT auto-enable when only `NV_CLOUD_TOKEN` and `NV_CLOUD_SERVER` are set.
 
 **Scenarios**:
 
-- **Opt-in required — env absent**: GIVEN `ENGRAM_CLOUD_AUTOSYNC` is not set but token and server are set, WHEN `cmdServe` runs, THEN autosync does not start.
-- **Opt-in present — autosync starts**: GIVEN `ENGRAM_CLOUD_AUTOSYNC=1`, token, and server URL are all set, WHEN `cmdServe` runs, THEN the Manager starts and a single info log confirms it.
-- **Edge case — env value not "1"**: GIVEN `ENGRAM_CLOUD_AUTOSYNC=true`, WHEN `cmdServe` runs, THEN autosync does not start (only exact `"1"` is accepted).
-- **Previous fatal inverted**: GIVEN `ENGRAM_CLOUD_AUTOSYNC=1` and valid config, WHEN `cmdServe` runs, THEN the process does NOT call `fatal()`; test `TestCmdServeAutosyncLifecycleGating` asserts the new behavior.
+- **Opt-in required — env absent**: GIVEN `NV_CLOUD_AUTOSYNC` is not set but token and server are set, WHEN `cmdServe` runs, THEN autosync does not start.
+- **Opt-in present — autosync starts**: GIVEN `NV_CLOUD_AUTOSYNC=1`, token, and server URL are all set, WHEN `cmdServe` runs, THEN the Manager starts and a single info log confirms it.
+- **Edge case — env value not "1"**: GIVEN `NV_CLOUD_AUTOSYNC=true`, WHEN `cmdServe` runs, THEN autosync does not start (only exact `"1"` is accepted).
+- **Previous fatal inverted**: GIVEN `NV_CLOUD_AUTOSYNC=1` and valid config, WHEN `cmdServe` runs, THEN the process does NOT call `fatal()`; test `TestCmdServeAutosyncLifecycleGating` asserts the new behavior.
 
 ---
 
 ### REQ-211: Runtime gating — token and server URL required
 
-When `ENGRAM_CLOUD_AUTOSYNC=1` is set but `ENGRAM_CLOUD_TOKEN` or `ENGRAM_CLOUD_SERVER` is missing, the runtime MUST log an error and skip starting autosync; it MUST NOT start the Manager with an empty token. The error MUST be logged at `ERROR` level and include which variable is missing. The `engram serve` process MUST still start successfully (autosync is optional; a missing token is not a fatal condition).
+When `NV_CLOUD_AUTOSYNC=1` is set but `NV_CLOUD_TOKEN` or `NV_CLOUD_SERVER` is missing, the runtime MUST log an error and skip starting autosync; it MUST NOT start the Manager with an empty token. The error MUST be logged at `ERROR` level and include which variable is missing. The `engram serve` process MUST still start successfully (autosync is optional; a missing token is not a fatal condition).
 
 **Scenarios**:
 
-- **Token missing — skip with error log**: GIVEN `ENGRAM_CLOUD_AUTOSYNC=1` and `ENGRAM_CLOUD_SERVER` set but `ENGRAM_CLOUD_TOKEN` empty, WHEN `cmdServe` runs, THEN autosync does not start and the log contains "ENGRAM_CLOUD_TOKEN".
-- **Server URL missing — skip with error log**: GIVEN `ENGRAM_CLOUD_AUTOSYNC=1` and token set but `ENGRAM_CLOUD_SERVER` empty, WHEN `cmdServe` runs, THEN autosync does not start and the log contains "ENGRAM_CLOUD_SERVER".
+- **Token missing — skip with error log**: GIVEN `NV_CLOUD_AUTOSYNC=1` and `NV_CLOUD_SERVER` set but `NV_CLOUD_TOKEN` empty, WHEN `cmdServe` runs, THEN autosync does not start and the log contains "NV_CLOUD_TOKEN".
+- **Server URL missing — skip with error log**: GIVEN `NV_CLOUD_AUTOSYNC=1` and token set but `NV_CLOUD_SERVER` empty, WHEN `cmdServe` runs, THEN autosync does not start and the log contains "NV_CLOUD_SERVER".
 - **Both present — starts normally**: GIVEN all three env vars set, WHEN `cmdServe` runs, THEN `tryStartAutosync` returns a non-nil Manager.
 - **Edge case — serve continues without autosync**: GIVEN token is missing, WHEN `cmdServe` runs, THEN the HTTP server starts and handles requests normally.
 
@@ -199,7 +199,7 @@ Autosync MUST run entirely in its own goroutine and MUST NOT hold any lock share
 
 ### REQ-214: Client 404 on mutation endpoints maps to PhaseBackoff
 
-When the autosync transport receives HTTP 404 from `POST /sync/mutations/push` or `GET /sync/mutations/pull`, the Manager MUST treat it as a `PhaseBackoff` condition with `reason_code: "server_unsupported"`. This indicates the server has not yet deployed the mutation endpoints. The Manager MUST log a warning that advises the operator to deploy the server before enabling `ENGRAM_CLOUD_AUTOSYNC=1`.
+When the autosync transport receives HTTP 404 from `POST /sync/mutations/push` or `GET /sync/mutations/pull`, the Manager MUST treat it as a `PhaseBackoff` condition with `reason_code: "server_unsupported"`. This indicates the server has not yet deployed the mutation endpoints. The Manager MUST log a warning that advises the operator to deploy the server before enabling `NV_CLOUD_AUTOSYNC=1`.
 
 **Scenarios**:
 
@@ -221,7 +221,7 @@ The `server.SyncStatusProvider` implementation wired into `cmdServe` and `cmdMCP
 **Scenarios**:
 
 - **Autosync enabled — adapter wins**: GIVEN autosync is started, WHEN `/sync/status` is queried, THEN the returned phase reflects the autosync Manager's current phase.
-- **Autosync disabled — store fallback**: GIVEN `ENGRAM_CLOUD_AUTOSYNC` is not set, WHEN `/sync/status` is queried, THEN the result comes from `storeSyncStatusProvider`.
+- **Autosync disabled — store fallback**: GIVEN `NV_CLOUD_AUTOSYNC` is not set, WHEN `/sync/status` is queried, THEN the result comes from `storeSyncStatusProvider`.
 - **Phase change reflects in status immediately**: GIVEN Manager transitions from `PhaseHealthy` to `PhasePushFailed`, WHEN `adapter.Status("proj")` is called next, THEN the returned phase is `"degraded"`.
 - **Edge case — status per project**: GIVEN multiple projects enrolled, WHEN `adapter.Status("proj-A")` and `adapter.Status("proj-B")` are called, THEN both return the same autosync phase (phase is global to the Manager, not per-project).
 

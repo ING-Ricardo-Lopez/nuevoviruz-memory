@@ -133,7 +133,7 @@ func TestInstallGeminiCLIInjectsMCPConfig(t *testing.T) {
 
 	engram, ok := mcpServers["engram"].(map[string]any)
 	if !ok {
-		t.Fatalf("expected mcpServers.engram object")
+		t.Fatalf("expected mcpServers.nuevoviruz object")
 	}
 
 	// Since resolveEngramCommand() uses os.Executable() on all platforms, the
@@ -201,7 +201,7 @@ func TestInstallCodexInjectsTOMLAndIsIdempotent(t *testing.T) {
 		"command = \"existing\"",
 		"args = [\"x\"]",
 		"",
-		"[mcp_servers.engram]",
+		"[mcp_servers.nuevoviruz]",
 		"command = \"wrong\"",
 		"args = [\"wrong\"]",
 	}, "\n")
@@ -236,7 +236,7 @@ func TestInstallCodexInjectsTOMLAndIsIdempotent(t *testing.T) {
 		if !strings.Contains(text, "[mcp_servers.existing]") {
 			t.Fatalf("expected existing mcp server section to be preserved")
 		}
-		if strings.Count(text, "[mcp_servers.engram]") != 1 {
+		if strings.Count(text, "[mcp_servers.nuevoviruz]") != 1 {
 			t.Fatalf("expected exactly one engram section, got:\n%s", text)
 		}
 		// resolveEngramCommand() uses os.Executable() on all platforms — command
@@ -337,7 +337,7 @@ func TestInstallOpenCodeSuccessAndMCPRegistered(t *testing.T) {
 		t.Fatalf("expected mcp object in opencode.json")
 	}
 	if _, ok := mcp["engram"]; !ok {
-		t.Fatalf("expected mcp.engram registration")
+		t.Fatalf("expected mcp.nuevoviruz registration")
 	}
 
 	tuiRaw, err := os.ReadFile(filepath.Join(xdg, "opencode", "tui.json"))
@@ -1101,8 +1101,8 @@ func TestCodexBlockUsesAbsolutePath(t *testing.T) {
 			osExecutable = func() (string, error) { return tc.exe, nil }
 
 			block := codexEngramBlockStr()
-			if !strings.Contains(block, "[mcp_servers.engram]") {
-				t.Fatalf("expected mcp_servers.engram header, got:\n%s", block)
+			if !strings.Contains(block, "[mcp_servers.nuevoviruz]") {
+				t.Fatalf("expected mcp_servers.nuevoviruz header, got:\n%s", block)
 			}
 			if !strings.Contains(block, `args = ["mcp", "--tools=agent"]`) {
 				t.Fatalf("expected args in codex block, got:\n%s", block)
@@ -1543,7 +1543,7 @@ func TestGeminiAndCodexHelpersErrorPaths(t *testing.T) {
 
 	t.Run("upsertCodexEngramBlock replaces section before another section", func(t *testing.T) {
 		input := strings.Join([]string{
-			"[mcp_servers.engram]",
+			"[mcp_servers.nuevoviruz]",
 			"command = \"wrong\"",
 			"args = [\"wrong\"]",
 			"",
@@ -1552,7 +1552,7 @@ func TestGeminiAndCodexHelpersErrorPaths(t *testing.T) {
 		}, "\n")
 
 		output := upsertCodexEngramBlock(input)
-		if strings.Count(output, "[mcp_servers.engram]") != 1 {
+		if strings.Count(output, "[mcp_servers.nuevoviruz]") != 1 {
 			t.Fatalf("expected one engram block, got:\n%s", output)
 		}
 		if !strings.Contains(output, "[mcp_servers.other]") {
@@ -2527,13 +2527,13 @@ func TestInstallOpenCodeWarningUsesResolvedCommand(t *testing.T) {
 	}
 }
 
-// ─── Issue #113: OpenCode plugin ENGRAM_BIN bake-in ─────────────────────────
+// ─── Issue #113: OpenCode plugin NV_BIN bake-in ─────────────────────────
 
 // TestPatchEngramBINLine verifies that patchEngramBINLine() correctly rewrites
-// the ENGRAM_BIN constant in the plugin source to include a Bun.which() runtime
+// the NV_BIN constant in the plugin source to include a Bun.which() runtime
 // fallback and a baked-in absolute path as the final headless fallback.
 func TestPatchEngramBINLine(t *testing.T) {
-	const original = `const ENGRAM_BIN = process.env.ENGRAM_BIN ?? "engram"`
+	const original = `const NV_BIN = process.env.NV_BIN ?? "engram"`
 
 	t.Run("bakes in absolute path with Bun.which intermediate fallback", func(t *testing.T) {
 		result := string(patchEngramBINLine([]byte(original), "/usr/local/bin/engram"))
@@ -2541,8 +2541,8 @@ func TestPatchEngramBINLine(t *testing.T) {
 		if strings.Contains(result, `?? "engram"`) {
 			t.Fatalf("original bare-engram fallback should be replaced, got:\n%s", result)
 		}
-		if !strings.Contains(result, `process.env.ENGRAM_BIN`) {
-			t.Fatalf("must keep process.env.ENGRAM_BIN as first option, got:\n%s", result)
+		if !strings.Contains(result, `process.env.NV_BIN`) {
+			t.Fatalf("must keep process.env.NV_BIN as first option, got:\n%s", result)
 		}
 		if !strings.Contains(result, `Bun.which("engram")`) {
 			t.Fatalf("must include Bun.which fallback, got:\n%s", result)
@@ -2551,7 +2551,7 @@ func TestPatchEngramBINLine(t *testing.T) {
 			t.Fatalf("must include baked-in absolute path, got:\n%s", result)
 		}
 		// Verify precedence order: env var ?? Bun.which ?? absolute path
-		envIdx := strings.Index(result, `process.env.ENGRAM_BIN`)
+		envIdx := strings.Index(result, `process.env.NV_BIN`)
 		whichIdx := strings.Index(result, `Bun.which`)
 		absIdx := strings.Index(result, `"/usr/local/bin/engram"`)
 		if !(envIdx < whichIdx && whichIdx < absIdx) {
@@ -2575,8 +2575,8 @@ func TestPatchEngramBINLine(t *testing.T) {
 		result := string(patchEngramBINLine([]byte(original), "engram"))
 
 		// When absBin=="engram", we still add Bun.which but don't repeat "engram" as absolute
-		if !strings.Contains(result, `process.env.ENGRAM_BIN`) {
-			t.Fatalf("must keep process.env.ENGRAM_BIN, got:\n%s", result)
+		if !strings.Contains(result, `process.env.NV_BIN`) {
+			t.Fatalf("must keep process.env.NV_BIN, got:\n%s", result)
 		}
 		if !strings.Contains(result, `Bun.which("engram")`) {
 			t.Fatalf("must include Bun.which fallback, got:\n%s", result)
@@ -2584,7 +2584,7 @@ func TestPatchEngramBINLine(t *testing.T) {
 	})
 
 	t.Run("does not modify source if marker is absent", func(t *testing.T) {
-		src := []byte(`// already patched\nconst ENGRAM_BIN = process.env.ENGRAM_BIN ?? Bun.which("engram") ?? "/bin/engram"`)
+		src := []byte(`// already patched\nconst NV_BIN = process.env.NV_BIN ?? Bun.which("engram") ?? "/bin/engram"`)
 		result := patchEngramBINLine(src, "/new/bin/engram")
 		// Marker not found — returns original unchanged
 		if string(result) != string(src) {
@@ -2603,7 +2603,7 @@ func TestPatchEngramBINLine(t *testing.T) {
 }
 
 // TestInstallOpenCodeBakesENGRAMBIN verifies that installOpenCode() writes a
-// plugin file where ENGRAM_BIN includes the absolute binary path as a fallback,
+// plugin file where NV_BIN includes the absolute binary path as a fallback,
 // so the plugin works in headless/systemd environments (issue #113).
 func TestInstallOpenCodeBakesENGRAMBIN(t *testing.T) {
 	t.Run("installed plugin contains absolute path fallback", func(t *testing.T) {
@@ -2629,8 +2629,8 @@ func TestInstallOpenCodeBakesENGRAMBIN(t *testing.T) {
 		content := string(raw)
 
 		// Must have env var override as first priority
-		if !strings.Contains(content, `process.env.ENGRAM_BIN`) {
-			t.Fatalf("installed plugin must keep process.env.ENGRAM_BIN override")
+		if !strings.Contains(content, `process.env.NV_BIN`) {
+			t.Fatalf("installed plugin must keep process.env.NV_BIN override")
 		}
 		// Must have Bun.which intermediate fallback
 		if !strings.Contains(content, `Bun.which("engram")`) {
@@ -2650,9 +2650,9 @@ func TestInstallOpenCodeBakesENGRAMBIN(t *testing.T) {
 		}
 	})
 
-	t.Run("ENGRAM_BIN env var still takes precedence at runtime", func(t *testing.T) {
+	t.Run("NV_BIN env var still takes precedence at runtime", func(t *testing.T) {
 		// We verify by inspection: the installed plugin must use ?? so that a
-		// truthy process.env.ENGRAM_BIN short-circuits before Bun.which and the
+		// truthy process.env.NV_BIN short-circuits before Bun.which and the
 		// baked-in path. This is the JavaScript ?? semantics guarantee.
 		resetSetupSeams(t)
 		home := useTestHome(t)
@@ -2672,16 +2672,16 @@ func TestInstallOpenCodeBakesENGRAMBIN(t *testing.T) {
 		content := string(raw)
 
 		// The line must have the form:
-		// const ENGRAM_BIN = process.env.ENGRAM_BIN ?? Bun.which("engram") ?? "/abs/path"
-		// where process.env.ENGRAM_BIN is leftmost (wins if set).
-		envIdx := strings.Index(content, `process.env.ENGRAM_BIN`)
+		// const NV_BIN = process.env.NV_BIN ?? Bun.which("engram") ?? "/abs/path"
+		// where process.env.NV_BIN is leftmost (wins if set).
+		envIdx := strings.Index(content, `process.env.NV_BIN`)
 		whichIdx := strings.Index(content, `Bun.which("engram")`)
 		absIdx := strings.Index(content, `"/usr/local/bin/engram"`)
 		if envIdx == -1 || whichIdx == -1 || absIdx == -1 {
 			t.Fatalf("missing expected tokens in installed plugin:\n%s", content)
 		}
 		if !(envIdx < whichIdx && whichIdx < absIdx) {
-			t.Fatalf("wrong operator precedence in ENGRAM_BIN line:\n%s", content)
+			t.Fatalf("wrong operator precedence in NV_BIN line:\n%s", content)
 		}
 	})
 

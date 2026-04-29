@@ -18,7 +18,7 @@
 
 - [x] 3.1 RED: Add auth-flow tests in `internal/cloud/cloudserver/cloudserver_test.go` + `internal/cloud/dashboard/dashboard_test.go` for cookie/session redirects, invalid token errors, and already-authenticated login redirect.
 - [x] 3.2 GREEN: Add `internal/cloud/dashboard/middleware.go` adapting dashboard context/middleware to `engram_dashboard_token` + bearer-token validation (no legacy username/password reintroduction).
-- [x] 3.3 GREEN: Reconcile admin gating with `ENGRAM_CLOUD_ADMIN` across `internal/cloud/dashboard` and `internal/cloud/config.go` expectations.
+- [x] 3.3 GREEN: Reconcile admin gating with `NV_CLOUD_ADMIN` across `internal/cloud/dashboard` and `internal/cloud/config.go` expectations.
 - [x] 3.4 REFACTOR: Keep auth seams explicit between `internal/cloud/auth/auth.go`, dashboard middleware, and server handlers; remove duplicated auth checks.
 
 ## Phase 4: Cloudstore read-model backfill by vertical slices
@@ -30,6 +30,6 @@
 
 ## Phase 5: Docs alignment and parity verification
 
-- [x] 5.1 Update `README.md`, `DOCS.md`, and `docs/ARCHITECTURE.md` with restored dashboard routes, env vars (`ENGRAM_CLOUD_TOKEN`, `ENGRAM_JWT_SECRET`, `ENGRAM_CLOUD_ADMIN`), and fallback behavior.
+- [x] 5.1 Update `README.md`, `DOCS.md`, and `docs/ARCHITECTURE.md` with restored dashboard routes, env vars (`NV_CLOUD_TOKEN`, `NV_JWT_SECRET`, `NV_CLOUD_ADMIN`), and fallback behavior.
 - [x] 5.2 Add regression tests in `internal/cloud/cloudserver/cloudserver_test.go` proving dashboard parity changes do not regress sync push/pull boundaries.
 - [x] 5.3 Verify full suite with `go test ./...` and `go test -cover ./...`; fix flakes/non-determinism before marking parity complete.

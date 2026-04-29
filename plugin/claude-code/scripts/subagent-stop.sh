@@ -5,8 +5,8 @@
 # the passive capture endpoint. All extraction logic lives in the
 # Go server — this script is intentionally minimal.
 
-ENGRAM_PORT="${ENGRAM_PORT:-7437}"
-ENGRAM_URL="http://127.0.0.1:${ENGRAM_PORT}"
+NV_PORT="${NV_PORT:-7437}"
+NV_URL="http://127.0.0.1:${NV_PORT}"
 
 # Load shared helpers
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -23,7 +23,7 @@ PROJECT=$(detect_project "$CWD")
 [ -z "$OUTPUT" ] && exit 0
 
 # Fire and forget — server handles extraction, dedup, and storage
-curl -sf "${ENGRAM_URL}/observations/passive" \
+curl -sf "${NV_URL}/observations/passive" \
   -X POST \
   -H "Content-Type: application/json" \
   -d "$(jq -n \

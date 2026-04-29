@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud/constants"
-	"github.com/Gentleman-Programming/engram/internal/cloud/syncguidance"
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/constants"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/syncguidance"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 )
 
 // ─── Phase Constants ─────────────────────────────────────────────────────────

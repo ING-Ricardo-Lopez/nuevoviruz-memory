@@ -7,7 +7,7 @@ import (
 )
 
 // SyncState tracks the state of a previous export run.
-// It is persisted as JSON in {vault}/engram/.engram-sync-state.json.
+// It is persisted as JSON in {vault}/engram/.nuevoviruz-sync-state.json.
 type SyncState struct {
 	LastExportAt string            `json:"last_export_at"`
 	Files        map[int64]string  `json:"files"`        // obs ID → relative vault path

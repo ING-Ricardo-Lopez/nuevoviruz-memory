@@ -58,24 +58,24 @@ Both hotfix rounds: documented in apply-progress.md with root-cause, fix, and TD
 
 **Tests**: 19/19 packages PASS — `go test ./... -count=1` — zero failures
 ```
-ok  github.com/Gentleman-Programming/engram/cmd/engram                      2.033s
-ok  github.com/Gentleman-Programming/engram/internal/cloud                  0.006s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/auth             0.021s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/autosync         0.018s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec       0.023s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/cloudserver      0.062s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/cloudstore       0.034s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/dashboard        0.030s
-ok  github.com/Gentleman-Programming/engram/internal/cloud/remote           0.036s
-ok  github.com/Gentleman-Programming/engram/internal/mcp                    0.332s
-ok  github.com/Gentleman-Programming/engram/internal/obsidian               0.205s
-ok  github.com/Gentleman-Programming/engram/internal/project                0.184s
-ok  github.com/Gentleman-Programming/engram/internal/server                 0.182s
-ok  github.com/Gentleman-Programming/engram/internal/setup                  0.127s
-ok  github.com/Gentleman-Programming/engram/internal/store                  0.757s
-ok  github.com/Gentleman-Programming/engram/internal/sync                   0.318s
-ok  github.com/Gentleman-Programming/engram/internal/tui                    0.113s
-ok  github.com/Gentleman-Programming/engram/internal/version                0.061s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/cmd/engram                      2.033s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud                  0.006s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/auth             0.021s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/autosync         0.018s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec       0.023s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudserver      0.062s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore       0.034s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/dashboard        0.030s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/remote           0.036s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/mcp                    0.332s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/obsidian               0.205s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/project                0.184s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/server                 0.182s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/setup                  0.127s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store                  0.757s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync                   0.318s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/tui                    0.113s
+ok  github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/version                0.061s
 ```
 
 **Race detector**: CLEAN — `go test -race ./internal/cloud/cloudstore/... ./internal/cloud/dashboard/...`

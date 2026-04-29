@@ -80,24 +80,24 @@ No blockers. The change is ready for `sdd-archive`.
 
 ```
 $ go test ./...
-ok  	github.com/Gentleman-Programming/engram/cmd/engram	2.226s
-ok  	github.com/Gentleman-Programming/engram/internal/cloud	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/auth	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/autosync	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/cloudserver	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/cloudstore	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/dashboard	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/cloud/remote	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/mcp	2.502s
-ok  	github.com/Gentleman-Programming/engram/internal/obsidian	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/project	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/server	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/setup	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/store	1.131s
-ok  	github.com/Gentleman-Programming/engram/internal/sync	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/tui	(cached)
-ok  	github.com/Gentleman-Programming/engram/internal/version	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/cmd/engram	2.226s
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/auth	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/autosync	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudserver	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/cloudstore	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/dashboard	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/remote	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/mcp	2.502s
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/obsidian	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/project	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/server	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/setup	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store	1.131s
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/tui	(cached)
+ok  	github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/version	(cached)
 ```
 
 Targeted execution of the two new addendum tests:

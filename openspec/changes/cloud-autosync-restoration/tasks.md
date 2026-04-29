@@ -93,7 +93,7 @@
 
 ### 2.2 GREEN — Replace `internal/cloud/autosync/manager.go` stub
 - [x] 2.2 Copy `engram-cloud` manager (451 LOC) and adapt:
-  - Update import paths to `github.com/Gentleman-Programming/engram/...`
+  - Update import paths to `github.com/ING-Ricardo-Lopez/nuevoviruz-memory/...`
   - Extend `Status` struct with `ReasonCode`, `ReasonMessage` (already present in stub, verify)
   - Add `StopForUpgrade(ctx) error` — sets PhaseDisabled, drains pending, retains lease
   - Add `ResumeAfterUpgrade(ctx) error` — sets PhaseIdle, re-arms cycle
@@ -140,8 +140,8 @@
   - **INVERT** `TestCmdServeAutosyncLifecycleGating` — was: asserts fatal; now: asserts Manager starts when env set (REQ-210)
   - Add `TestAutosyncEnvAbsent` (REQ-210: no AUTOSYNC env → no Manager started)
   - Add `TestAutosyncEnvNotOne` (REQ-210: AUTOSYNC=true → no Manager, only "1" accepted)
-  - Add `TestAutosyncGatingTokenMissing` (REQ-211: AUTOSYNC=1, server set, token empty → log contains ENGRAM_CLOUD_TOKEN, serve continues)
-  - Add `TestAutosyncGatingServerMissing` (REQ-211: AUTOSYNC=1, token set, server empty → log contains ENGRAM_CLOUD_SERVER, serve continues)
+  - Add `TestAutosyncGatingTokenMissing` (REQ-211: AUTOSYNC=1, server set, token empty → log contains NV_CLOUD_TOKEN, serve continues)
+  - Add `TestAutosyncGatingServerMissing` (REQ-211: AUTOSYNC=1, token set, server empty → log contains NV_CLOUD_SERVER, serve continues)
   - Add `TestAutosyncGatingBothPresent` (REQ-211: all vars set → tryStartAutosync returns non-nil Manager)
   - Add `TestCmdServeStartsWithoutAutosync` (REQ-211: token missing → HTTP server still handles requests)
 
@@ -149,7 +149,7 @@
 - [x] 4.2 Modify `cmd/engram/main.go`:
   - Delete `fatal("cloud autosync is not available")` block (~line 554)
   - Add `tryStartAutosync(s *server.Server, cfg cloud.RuntimeConfig) (*autosync.Manager, context.CancelFunc)`:
-    - Step 1: check `os.Getenv("ENGRAM_CLOUD_AUTOSYNC") == "1"` — return nil,nil if not
+    - Step 1: check `os.Getenv("NV_CLOUD_AUTOSYNC") == "1"` — return nil,nil if not
     - Step 2: resolve server URL — log ERROR + return nil,nil if empty
     - Step 3: resolve token — log ERROR + return nil,nil if empty
     - Step 4: `NewMutationTransport(url, token)` → `newCloudAutosyncManager(s, rt)` → `go mgr.Run(ctx)`
@@ -171,7 +171,7 @@
   - `TestGoroutineIsolationConcurrentWrites` (REQ-212: 1000 concurrent local writes with cloud offline — no deadlock)
 
 ### 5.2 GREEN — Docs updates [parallel with 5.1]
-- [x] 5.2 Update `DOCS.md`: add `## Cloud Autosync` section with env vars table (ENGRAM_CLOUD_AUTOSYNC, ENGRAM_CLOUD_SERVER, ENGRAM_CLOUD_TOKEN), phase table (idle/running/healthy/degraded/paused), reason_code table (transport_failed, server_unsupported, upgrade_paused, auth_required), and troubleshooting guide for server_unsupported
+- [x] 5.2 Update `DOCS.md`: add `## Cloud Autosync` section with env vars table (NV_CLOUD_AUTOSYNC, NV_CLOUD_SERVER, NV_CLOUD_TOKEN), phase table (idle/running/healthy/degraded/paused), reason_code table (transport_failed, server_unsupported, upgrade_paused, auth_required), and troubleshooting guide for server_unsupported
 - [x] 5.3 Update `README.md`: add one-line pointer to DOCS.md Cloud Autosync section
 - [x] 5.4 Update `docs/ARCHITECTURE.md`: add autosync box to architecture diagram, lease note
 - [x] 5.5 Update `docs/AGENT-SETUP.md`: add autosync toggle instructions + server deploy prerequisite

@@ -9,7 +9,7 @@ The integrated repo only exposes a minimal sync-status dashboard, while `/Users/
 ### In Scope
 - Restore dashboard routes, templates, partials, assets, and tests from `engram-cloud` into `internal/cloud/dashboard`.
 - Reconcile missing `cloudstore` query/index APIs needed by overview, browser, projects, contributors, and admin pages.
-- Adapt auth/runtime wiring to integrated constraints (`ENGRAM_CLOUD_TOKEN`, signed dashboard cookie, `ENGRAM_JWT_SECRET`, admin config).
+- Adapt auth/runtime wiring to integrated constraints (`NV_CLOUD_TOKEN`, signed dashboard cookie, `NV_JWT_SECRET`, admin config).
 - Update docs for restored behavior and runtime requirements.
 
 ### Out of Scope
@@ -30,7 +30,7 @@ The integrated repo only exposes a minimal sync-status dashboard, while `/Users/
 Use source-guided restoration, not fresh invention.
 - Phase 1: port layout/components/routes/assets/tests, keeping server-rendered URLs and form fallback.
 - Phase 2: add missing `cloudstore` read models/indexes required by restored handlers.
-- Phase 3: adapt auth/runtime seams: translate JWT-cookie assumptions to the integrated bearer-token session codec, preserve `/dashboard/login` POST fallback, and honor `ENGRAM_CLOUD_ADMIN` plus `ENGRAM_JWT_SECRET` rules.
+- Phase 3: adapt auth/runtime seams: translate JWT-cookie assumptions to the integrated bearer-token session codec, preserve `/dashboard/login` POST fallback, and honor `NV_CLOUD_ADMIN` plus `NV_JWT_SECRET` rules.
 - Phase 4: align docs and add parity regression tests for dashboard auth plus cloud push/pull boundaries.
 
 ## Affected Areas

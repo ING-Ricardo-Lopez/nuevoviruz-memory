@@ -3,7 +3,7 @@ package obsidian
 import (
 	"testing"
 
-	"github.com/Gentleman-Programming/engram/internal/store"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
 )
 
 // ─── Mock StoreReader ─────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ func TestIncrementalExport(t *testing.T) {
 			TopicHubs:    map[string]string{},
 			Version:      1,
 		}
-		stateFile := dir + "/engram/.engram-sync-state.json"
+		stateFile := dir + "/engram/.nuevoviruz-sync-state.json"
 		if err := mkdirAll(dir + "/engram"); err != nil {
 			t.Fatalf("setup: %v", err)
 		}
@@ -228,7 +228,7 @@ func TestDeletedObsRemoved(t *testing.T) {
 			TopicHubs:    map[string]string{},
 			Version:      1,
 		}
-		stateFile := engDir + "/.engram-sync-state.json"
+		stateFile := engDir + "/.nuevoviruz-sync-state.json"
 		if err := WriteState(stateFile, existingState); err != nil {
 			t.Fatalf("setup WriteState: %v", err)
 		}
@@ -398,7 +398,7 @@ func TestFullExportPipeline(t *testing.T) {
 		}
 
 		// State file must exist
-		stateFile := dir + "/engram/.engram-sync-state.json"
+		stateFile := dir + "/engram/.nuevoviruz-sync-state.json"
 		if !fileExists(stateFile) {
 			t.Errorf("state file not found at %s", stateFile)
 		}

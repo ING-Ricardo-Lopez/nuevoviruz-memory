@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud"
-	"github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec"
-	engramsync "github.com/Gentleman-Programming/engram/internal/sync"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec"
+	engramsync "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync"
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )

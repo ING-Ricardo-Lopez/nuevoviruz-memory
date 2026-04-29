@@ -61,7 +61,7 @@
 
 2. **dashboard auth boundary**
    - Old dashboard assumes identity-bearing JWT cookie (`engram_session`) from username/email/password login.
-   - Integrated runtime uses bearer token (`ENGRAM_CLOUD_TOKEN`) + signed opaque dashboard cookie (`engram_dashboard_token`) that maps to one configured token.
+   - Integrated runtime uses bearer token (`NV_CLOUD_TOKEN`) + signed opaque dashboard cookie (`engram_dashboard_token`) that maps to one configured token.
    - Must adapt middleware/context helpers and admin checks without breaking current token-based security model.
 
 3. **dashboard data access ↔ cloudstore API**
@@ -71,7 +71,7 @@
      - full/partial port of old cloudstore modules (`search.go`, `project_controls.go`, extra methods/schema).
 
 4. **runtime/config wiring**
-   - Ensure `ENGRAM_CLOUD_ADMIN` remains effective for admin gating in restored UI.
+   - Ensure `NV_CLOUD_ADMIN` remains effective for admin gating in restored UI.
    - Keep local-first semantics explicit: dashboard is read/admin surface over replicated cloud data, not source of truth.
 
 5. **templ runtime strategy**

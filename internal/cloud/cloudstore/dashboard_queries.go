@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gentleman-Programming/engram/internal/cloud/chunkcodec"
-	"github.com/Gentleman-Programming/engram/internal/store"
-	engramsync "github.com/Gentleman-Programming/engram/internal/sync"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/cloud/chunkcodec"
+	"github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/store"
+	engramsync "github.com/ING-Ricardo-Lopez/nuevoviruz-memory/internal/sync"
 )
 
 var ErrDashboardProjectInvalid = errors.New("cloudstore: dashboard project is invalid")
